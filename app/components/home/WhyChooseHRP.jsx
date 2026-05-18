@@ -12,7 +12,7 @@ const FEATURES = [
     },
     {
         Icon: Award,
-        heading: '15+ Years of Experience',
+        heading: '44+ Years of Experience',
         body: 'Decades of industrial supply expertise across a wide range of sectors.',
     },
     {
@@ -87,7 +87,7 @@ export default function WhyChooseHRP() {
                                 className="font-heading font-bold text-brand-accent"
                                 style={{ fontSize: '2rem' }}
                             >
-                                15+
+                                44+
                             </span>
                             <div className="border-l border-white/20 pl-4">
                                 <p className="font-body text-white text-sm leading-snug">

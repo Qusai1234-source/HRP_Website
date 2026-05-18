@@ -14,7 +14,7 @@ const MILESTONES = [
     body: "What began in a modest Hyderabad office with a catalogue of essential industrial components quietly grew into something much larger. HRP Industrial Products was founded on the belief that manufacturers deserve a reliable, knowledgeable supply partner — not just a vendor. From day one, precision and commitment defined every transaction.",
     image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=900&q=80",
     alt: "Industrial workshop at founding",
-    stat: "Est. 2009",
+    stat: "Est. 1983",
     tag: "Origin · Hyderabad",
     isFirst: true,
   },
@@ -898,9 +898,9 @@ export default function CompanyJourney() {
 
           {/* HEADER */}
           <div ref={headerRef} className={`hrptl-header ${headerOn ? "hrptl-header--on" : ""}`}>
-            <p className="hrptl-header-eyebrow">Est. 2009 · Industrial Heritage</p>
+            <p className="hrptl-header-eyebrow">Est. 1983 · Industrial Heritage</p>
             <h2 className="hrptl-header-h2">
-              Engineering Growth<br /><em>Since 2009</em>
+              Engineering Growth<br /><em>Since 1983</em>
             </h2>
             <p className="hrptl-header-sub">
               Fifteen years of building trust, expanding reach, and deepening our engineering expertise — one partnership at a time.
