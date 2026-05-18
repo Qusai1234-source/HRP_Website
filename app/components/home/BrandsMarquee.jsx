@@ -1,88 +1,189 @@
-// Server Component — pure CSS, no client JS needed
+'use client'
+
+import { useState } from 'react'
+// Note: hovered state removed — no hover animation on logos
 
 const BRANDS = [
-    { name: 'Dunlop', logo: 'dunlop.svg' },
     { name: 'Pneumax', logo: 'pneumax.svg' },
-    { name: 'Conact Pneumatics', logo: 'conact.svg' },
+    { name: 'Dunlop', logo: 'dunlop.svg' },
+    { name: 'Painter', logo: 'painter.png' },
+    { name: 'Conact', logo: 'conact.svg' },
+    { name: 'Wika', logo: 'wika.png' },
+    { name: 'PIX', logo: 'pix.png' },
+    { name: 'Schmalz', logo: 'schmalz.png' },
+    { name: 'Parker', logo: 'parker.png' },
+    { name: 'Piab', logo: 'piab.png' },
+    { name: 'Band-IT', logo: 'band-it.png' },
+    { name: 'Jolly', logo: 'jolly.png' },
+    { name: 'Unibor', logo: 'unibor.png' },
+    { name: 'Techno', logo: 'techno.png' },
+    { name: 'Molykote', logo: 'molykote.png' },
+    { name: 'Janatics', logo: 'janatics.png' },
+    { name: 'Makita', logo: 'makita.png' },
+    { name: 'Fevicol', logo: 'fevicol.png' },
+    { name: 'Dowsil', logo: 'dowsil.png' },
+    { name: 'Loctite', logo: 'loctite.png' },
     { name: 'Baumer', logo: 'baumer.svg' },
     { name: 'Bosch', logo: 'bosch.svg' },
-    { name: 'Techno', logo: 'techno.png' },
-    { name: 'Alpha Hoses', logo: 'alpha-hoses.png' },
-    { name: 'Wadfow', logo: 'wadfow.png' },
-    { name: 'Painter', logo: 'painter.png' },
-    { name: 'Khaitan', logo: 'khaitan.png' },
 ]
 
-const TRACK = [...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS]
+// Triple for seamless loop — translateX(-33.333%) = exactly one set
+const TRACK = [...BRANDS, ...BRANDS, ...BRANDS]
 
+// ─── Logo cell ────────────────────────────────────────────────────────────────
+function BrandItem({ brand }) {
+    const [broken, setBroken] = useState(false)
+
+    return (
+        <div className="flex-shrink-0 px-8">
+            <div
+                style={{
+                    width: '160px',
+                    height: '80px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                {!broken ? (
+                    <img
+                        src={`/images/brands/${brand.logo}`}
+                        alt={brand.name}
+                        onError={() => setBroken(true)}
+                        style={{
+                            maxHeight: '128px',
+                            maxWidth: '300px',
+                            width: 'auto',
+                            height: 'auto',
+                            objectFit: 'contain',
+                            display: 'block',
+                        }}
+                        loading="lazy"
+                    />
+                ) : (
+                    <span
+                        style={{
+                            fontFamily: 'var(--font-syne), sans-serif',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(58,69,85,0.4)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {brand.name}
+                    </span>
+                )}
+            </div>
+        </div>
+    )
+}
+
+// ─── Section ──────────────────────────────────────────────────────────────────
 export default function BrandsMarquee() {
     return (
-        <section className="py-20 bg-brand-light overflow-hidden">
+        <section
+            className="bg-brand-light"
+            // Extra top padding absorbs any navbar bleed on first render
+            style={{ paddingTop: '80px', paddingBottom: '80px' }}
+        >
             <style>{`
-        @keyframes hrp-brands-ltr {
+        @keyframes hrp-brands-scroll {
           from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
+          to   { transform: translateX(-33.333%); }
         }
         .hrp-brands-track {
           display: flex;
           align-items: center;
           width: max-content;
-          animation: hrp-brands-ltr 36s linear infinite;
+          animation: hrp-brands-scroll 42s linear infinite;
           will-change: transform;
         }
         .hrp-brands-track:hover {
           animation-play-state: paused;
         }
-        .hrp-brand-logo {
-          opacity: 0.45;
-          filter: grayscale(1);
-          transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
-        }
-        .hrp-brand-logo:hover {
-          opacity: 1;
-          filter: grayscale(0);
-          transform: scale(1.08);
-        }
       `}</style>
 
-            {/* Section header */}
-            <div className="max-w-7xl mx-auto px-6 mb-14 text-center">
-                <p className="font-body text-brand-primary font-semibold text-sm tracking-widest uppercase mb-3">
+            {/* Header — constrained width, never touches edges */}
+            <div
+                style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', textAlign: 'center', marginBottom: '56px' }}
+            >
+                <p
+                    style={{
+                        fontFamily: 'var(--font-inter), sans-serif',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.22em',
+                        textTransform: 'uppercase',
+                        color: 'var(--color-brand-primary, #2B7EA1)',
+                        marginBottom: '12px',
+                    }}
+                >
                     Authorized Dealers &amp; Stockists
                 </p>
                 <h2
-                    className="font-heading font-bold text-brand-dark"
-                    style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)' }}
+                    style={{
+                        fontFamily: 'var(--font-syne), sans-serif',
+                        fontWeight: 700,
+                        fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+                        color: 'var(--color-brand-dark, #1A2533)',
+                        lineHeight: 1.1,
+                    }}
                 >
                     Brands We Carry
                 </h2>
             </div>
 
-            {/* Marquee */}
-            <div className="relative">
+            {/* Marquee strip — overflow hidden on a separate wrapper so edge fades clip correctly */}
+            <div style={{ position: 'relative', overflow: 'hidden' }}>
 
-                {/* Edge fades */}
-                <div aria-hidden className="absolute left-0 top-0 bottom-0 w-28 z-10 pointer-events-none"
-                    style={{ background: 'linear-gradient(to right, #f4f6f8, transparent)' }} />
-                <div aria-hidden className="absolute right-0 top-0 bottom-0 w-28 z-10 pointer-events-none"
-                    style={{ background: 'linear-gradient(to left, #f4f6f8, transparent)' }} />
+                {/* Left fade — starts from the very left edge, not from max-width container */}
+                <div
+                    aria-hidden
+                    style={{
+                        position: 'absolute', top: 0, left: 0, bottom: 0,
+                        width: '120px', zIndex: 10, pointerEvents: 'none',
+                        background: 'linear-gradient(to right, #f4f6f8 0%, transparent 100%)',
+                    }}
+                />
+                {/* Right fade */}
+                <div
+                    aria-hidden
+                    style={{
+                        position: 'absolute', top: 0, right: 0, bottom: 0,
+                        width: '120px', zIndex: 10, pointerEvents: 'none',
+                        background: 'linear-gradient(to left, #f4f6f8 0%, transparent 100%)',
+                    }}
+                />
 
-                {/* Subtle divider lines above and below the logo strip */}
-                <div className="border-t border-b border-gray-200/60 py-6">
-                    <div className="hrp-brands-track">
+                {/* Divider lines */}
+                <div style={{ borderTop: '1px solid rgba(58,69,85,0.08)', borderBottom: '1px solid rgba(58,69,85,0.08)' }}>
+                    <div
+                        className="hrp-brands-track"
+                        // Extra left padding so first logo is never flush with the fade mask
+                        style={{ paddingLeft: '48px' }}
+                    >
                         {TRACK.map((brand, i) => (
-                            <div key={i} className="flex-shrink-0 flex items-center justify-center w-48 h-16 px-6">
-                                <img
-                                    src={`/images/brands/${brand.logo}`}
-                                    alt={brand.name}
-                                    className="hrp-brand-logo w-full h-full object-contain"
-                                    loading="lazy"
-                                />
-                            </div>
+                            <BrandItem key={`${brand.name}-${i}`} brand={brand} />
                         ))}
                     </div>
                 </div>
+            </div>
 
+            {/* Brand count */}
+            <div style={{ textAlign: 'center', marginTop: '36px' }}>
+                <p
+                    style={{
+                        fontFamily: 'var(--font-inter), sans-serif',
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        color: 'rgba(58,69,85,0.3)',
+                    }}
+                >
+                    {BRANDS.length} Authorized Brands
+                </p>
             </div>
         </section>
     )

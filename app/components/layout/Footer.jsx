@@ -4,8 +4,8 @@ import { getWhatsAppUrl } from "@/app/lib/utils";
 
 // TODO: Replace with real client data before launch
 const CONTACT = {
-    phone: "+91 XXXXX XXXXX",
-    email: "info@hrp.com",
+    phone: "+91 9014538495",
+    email: "info@hrpvizag.com",
     address: "Your City, State — India",
 };
 
@@ -55,10 +55,10 @@ export default function Footer() {
                     {/* Col 1 — Brand */}
                     <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-primary">
-                                <span className="font-heading font-bold text-white text-sm">HRP</span>
+                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white">
+                                <img src="/images/hrp_logo.png"></img>
                             </div>
-                            <span className="font-heading font-bold text-white text-lg">HRP</span>
+                            <span className="font-heading font-bold text-white text-lg">Hydraulic &Rubber Products</span>
                         </div>
                         <p className="font-body text-white/45 text-sm leading-relaxed max-w-[240px]">
                             Supplying high-quality industrial products — SS Bellows, Hoses, Gauges, Valves and Fittings.
@@ -131,7 +131,7 @@ export default function Footer() {
             </div>
 
             {/* Bottom bar */}
-            <div className="border-t border-white/5">
+            <div className="border-t border-white/5 pb-12">
                 <div className="container-hrp py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <p className="font-body text-white/25 text-xs">
                         © {currentYear} HRP. All rights reserved.

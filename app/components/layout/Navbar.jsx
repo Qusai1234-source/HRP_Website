@@ -51,7 +51,7 @@ export default function Navbar() {
                             </div>
                             <div className="hidden sm:block">
                                 <p className="font-heading font-bold text-white text-lg leading-none">
-                                    HRP
+                                    Hydraulics & Rubber Products
                                 </p>
                                 <p className="font-body text-white/40 text-[10px] tracking-widest uppercase leading-none mt-0.5">
                                     Industrial Products

@@ -93,7 +93,7 @@ export default function HeroSection() {
                     <div className="flex items-center min-h-[86vh]">
 
                         {/* Text block — left-anchored, max width constrains it away from products */}
-                        <div className="w-full max-w-[600px]">
+                        <div className="w-full max-w-[600px] pt-10">
 
                             {/* Year / credential badge — replaces generic eyebrow pill */}
                             <motion.div
@@ -104,7 +104,7 @@ export default function HeroSection() {
                                     className="font-heading font-bold text-brand-accent"
                                     style={{ fontSize: '0.7rem', letterSpacing: '0.25em' }}
                                 >
-                                    EST. 2009
+                                    EST. 1983
                                 </div>
                                 <div className="flex-1 h-px max-w-[48px]" style={{ background: 'rgba(141,198,63,0.5)' }} />
                                 <div
@@ -145,9 +145,7 @@ export default function HeroSection() {
                             {/* Category list — plain text, light, tight */}
                             <motion.div {...fadeUp(0.8)} className="mb-2">
                                 <p className="font-body text-white/45 text-sm leading-[2] tracking-wide">
-                                    SS Bellows&ensp;/&ensp;Hydraulic Hoses&ensp;/&ensp;Pneumatic Hoses&ensp;/&ensp;
-                                    Pressure Gauges&ensp;/&ensp;Valves&ensp;/&ensp;Fittings&ensp;/&ensp;
-                                    Instrumentation&ensp;/&ensp;Compressors&ensp;/&ensp;Vacuum Components
+                                    Hydraulic Hoses and Fittings&ensp;/&ensp;Pneumatic Hoses And Fittings&ensp;/&ensp;SS Bellows and Hoses&ensp;/&ensp;Instrumentations/&ensp;Valves&ensp;/&ensp;Vacuum Components&ensp;/&ensp;Compressors and other Industrial Accessories.
                                 </p>
                             </motion.div>
 

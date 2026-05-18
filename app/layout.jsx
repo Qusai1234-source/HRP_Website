@@ -1,8 +1,6 @@
 import "./globals.css";
-import Navbar from "@/app/components/layout/Navbar";
-import Footer from "@/app/components/layout/Footer";
-import WhatsAppFAB from "@/app/components/layout/WhatsAppFAB";
-import IntroWrapper from '@/app/components/IntroWrapper';
+import IntroWrapper from "@/app/components/IntroWrapper";
+import PublicShell from "@/app/components/layout/PublicShell";
 
 export const metadata = {
   title: {
@@ -22,10 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
         <IntroWrapper />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <WhatsAppFAB />
+        <PublicShell>{children}</PublicShell>
       </body>
     </html>
   );

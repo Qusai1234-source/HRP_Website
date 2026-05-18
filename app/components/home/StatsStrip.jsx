@@ -7,18 +7,19 @@ import { Clock, Package, Users, MapPin } from 'lucide-react'
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // ⚠️  Update these numbers with the real figures from the client before launch
 const STATS = [
-    { Icon: Clock, label: 'Years in Business', value: 15, suffix: '+' },
-    { Icon: Package, label: 'Products Listed', value: 500, suffix: '+' },
-    { Icon: Users, label: 'Satisfied Clients', value: 200, suffix: '+' },
-    { Icon: MapPin, label: 'Cities Served', value: 10, suffix: '+' },
+    { Icon: Clock, label: 'Years in Business', value: 44, suffix: '+' },
+    { Icon: Package, label: 'Products Listed', value: 10, suffix: 'k+' },
+    { Icon: Users, label: 'Satisfied Clients', value: 100, suffix: 'k+' },
+    { Icon: MapPin, label: 'Delivery', value: 'Pan India', suffix: '' },
 ]
 
 // ─── Animated counter ─────────────────────────────────────────────────────────
 function AnimatedNumber({ end, suffix, active, duration = 1800 }) {
-    const [count, setCount] = useState(0)
+    const isString = typeof end === 'string' && isNaN(Number(end))
+    const [count, setCount] = useState(isString ? end : 0)
 
     useEffect(() => {
-        if (!active) return
+        if (!active || isString) return
         let rafId
         let startTs = null
 
@@ -32,7 +33,7 @@ function AnimatedNumber({ end, suffix, active, duration = 1800 }) {
         })
 
         return () => cancelAnimationFrame(rafId)
-    }, [active, end, duration])
+    }, [active, end, duration, isString])
 
     return (
         <span>

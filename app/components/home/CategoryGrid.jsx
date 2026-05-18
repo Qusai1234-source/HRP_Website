@@ -40,7 +40,6 @@ const CATEGORIES = [
         image: '/images/categories/vacuum.png',
         Icon: Circle,
         span: 'col-span-1',
-        badge: 'Schmalz',
     },
     {
         slug: 'valves',
