@@ -8,23 +8,21 @@ const BRANDS = [
     { name: 'Dunlop', logo: 'dunlop.svg' },
     { name: 'Painter', logo: 'painter.png' },
     { name: 'Conact', logo: 'conact.svg' },
-    { name: 'Wika', logo: 'wika.png' },
-    { name: 'PIX', logo: 'pix.png' },
-    { name: 'Schmalz', logo: 'schmalz.png' },
-    { name: 'Parker', logo: 'parker.png' },
+    { name: 'Wika', logo: 'wika.jpg' },
+    { name: 'PIX', logo: 'pix.jpg' },
+    { name: 'Schmalz', logo: 'schmalz.jpg' },
+    { name: 'Parker', logo: 'parker.jpg' },
     { name: 'Piab', logo: 'piab.png' },
-    { name: 'Band-IT', logo: 'band-it.png' },
-    { name: 'Jolly', logo: 'jolly.png' },
-    { name: 'Unibor', logo: 'unibor.png' },
-    { name: 'Techno', logo: 'techno.png' },
-    { name: 'Molykote', logo: 'molykote.png' },
-    { name: 'Janatics', logo: 'janatics.png' },
-    { name: 'Makita', logo: 'makita.png' },
-    { name: 'Fevicol', logo: 'fevicol.png' },
-    { name: 'Dowsil', logo: 'dowsil.png' },
+    { name: 'Band-IT', logo: 'band-it.jpg' },
+    { name: 'Jolly', logo: 'jolly.jpg' },
+    { name: 'Unibor', logo: 'unibor.jpg' },
+    { name: 'Techno', logo: 'techno.jpg' },
+    { name: 'Molykote', logo: 'molykote.jpg' },
+    { name: 'Janatics', logo: 'janatics.jpg' },
+    { name: 'Makita', logo: 'makita.jpg' },
+    { name: 'Fevicol', logo: 'fevicol.jpg' },
+    { name: 'Dowsil', logo: 'dowsil.jpg' },
     { name: 'Loctite', logo: 'loctite.png' },
-    { name: 'Baumer', logo: 'baumer.svg' },
-    { name: 'Bosch', logo: 'bosch.svg' },
 ]
 
 // Triple for seamless loop — translateX(-33.333%) = exactly one set
@@ -39,10 +37,11 @@ function BrandItem({ brand }) {
             <div
                 style={{
                     width: '160px',
-                    height: '80px',
+                    height: '88px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    overflow: 'hidden',
                 }}
             >
                 {!broken ? (
@@ -51,12 +50,12 @@ function BrandItem({ brand }) {
                         alt={brand.name}
                         onError={() => setBroken(true)}
                         style={{
-                            maxHeight: '128px',
-                            maxWidth: '300px',
-                            width: 'auto',
-                            height: 'auto',
+                            height: '72px',   /* fixed height — every logo same size */
+                            width: 'auto',    /* width floats to preserve aspect ratio */
+                            maxWidth: '150px',/* prevents very wide logos from spilling */
                             objectFit: 'contain',
                             display: 'block',
+                            flexShrink: 0,
                         }}
                         loading="lazy"
                     />
