@@ -20,7 +20,7 @@ async function getFeaturedProducts() {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, description, category, image_url')
+      .select('id, slug, name, description, category, image_url')
       .order('created_at', { ascending: false })
       .limit(4)
 

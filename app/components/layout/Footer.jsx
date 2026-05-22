@@ -56,7 +56,7 @@ export default function Footer() {
                     <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
                             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white">
-                                <img src="/images/hrp_logo.png"></img>
+                                <img src="/images/hrp_logo.png" alt="HRP logo" />
                             </div>
                             <span className="font-heading font-bold text-white text-lg">Hydraulic &Rubber Products</span>
                         </div>
@@ -95,7 +95,7 @@ export default function Footer() {
                         <ul className="space-y-3">
                             {PRODUCT_CATEGORIES.map((cat) => (
                                 <li key={cat}>
-                                    <FooterLink href={`/products?category=${encodeURIComponent(cat)}`}>
+                                    <FooterLink href="/products">
                                         {cat}
                                     </FooterLink>
                                 </li>

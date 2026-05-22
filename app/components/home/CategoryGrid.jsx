@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Gauge, Wind, Circle, Droplets, Vacuum, Wrench, Zap, Layers, PaintBucket, Anchor, Settings2 } from 'lucide-react'
+import { ArrowRight, Gauge, Wind, Circle, Droplets, Wrench, Zap, Layers, PaintBucket, Anchor, Settings2 } from 'lucide-react'
 
 // ─── 11 Categories ────────────────────────────────────────────────────────────
 // ⚠️  Add product photos to /public/images/categories/
@@ -34,7 +34,7 @@ const CATEGORIES = [
         span: 'col-span-1',
     },
     {
-        slug: 'vacuum-components',
+        slug: 'vacuum',
         name: 'Vacuum Components',
         description: 'Schmalz vacuum grippers, suction cups, vacuum generators and lifting systems for material handling.',
         image: '/images/categories/vacuum.png',
@@ -50,7 +50,7 @@ const CATEGORIES = [
         span: 'col-span-1',
     },
     {
-        slug: 'rubber-products',
+        slug: 'rubber',
         name: 'Rubber Products',
         description: 'Industrial rubber sheets, hoses, gaskets, O-rings, mounts and custom rubber moulded components.',
         image: '/images/categories/rubber.png',
@@ -74,7 +74,7 @@ const CATEGORIES = [
         span: 'col-span-1',
     },
     {
-        slug: 'paint-products',
+        slug: 'paint',
         name: 'Paint Equipment',
         description: 'Spray guns, paint pressure pots, air spray systems, HVLP equipment and surface preparation tools.',
         image: '/images/categories/paint.png',
@@ -82,7 +82,7 @@ const CATEGORIES = [
         span: 'col-span-1',
     },
     {
-        slug: 'tackles-lifting',
+        slug: 'lifting',
         name: 'Tackles & Lifting',
         description: 'Chain hoists, wire rope hoists, slings, shackles and material handling equipment for safe industrial lifting.',
         image: '/images/categories/lifting.png',
@@ -90,7 +90,7 @@ const CATEGORIES = [
         span: 'col-span-1',
     },
     {
-        slug: 'ss-bellows',
+        slug: 'bellows',
         name: 'SS Bellows',
         description: 'Stainless steel expansion joints and corrugated bellows for vibration isolation and thermal movement compensation.',
         image: '/images/categories/bellows.png',
@@ -116,7 +116,7 @@ function CategoryCard({ cat }) {
     return (
         <motion.div variants={cardVariants} className={cat.span}>
             <Link
-                href={`/products?category=${encodeURIComponent(cat.slug)}`}
+                href={`/products?category=${cat.slug}`}
                 className="group relative flex flex-col justify-between overflow-hidden rounded-2xl cursor-pointer"
                 style={{ minHeight: '260px' }}
             >

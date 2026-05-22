@@ -23,7 +23,7 @@ function ProductCard({ product }) {
     return (
         <motion.div variants={cardVariants}>
             <Link
-                href={`/products/${product.id}`}
+                href={product.slug ? `/products/item/${product.slug}` : "/products"}
                 className="group flex flex-col h-full rounded-2xl overflow-hidden border border-gray-100 bg-white hover:border-brand-primary/30 hover:shadow-xl transition-all duration-300"
             >
                 {/* Image area */}
