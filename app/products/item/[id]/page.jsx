@@ -8,14 +8,14 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/app/lib/supabase";
-
-const slugify = (s) => s?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "";
+import { slugify } from "@/app/lib/utils";
 
 /* ─── Loading Skeleton ─────────────────────────────────────────────────────── */
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-[#0a0f18]" style={{ paddingTop: "6rem" }}>
+    <div className="min-h-screen bg-brand-dark" style={{ paddingTop: "6rem" }}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="h-3.5 w-64 bg-white/[0.06] rounded-full mb-10 animate-pulse" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -50,11 +50,11 @@ function RelatedCard({ product, index }) {
       <Link
         href={`/products/item/${product.slug}`}
         className="group block rounded-xl overflow-hidden border border-white/[0.07] hover:border-brand-primary/40 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-        style={{ background: "linear-gradient(160deg, rgba(43,126,161,0.06) 0%, #0e1820 100%)" }}
+        style={{ background: "linear-gradient(160deg, rgba(43,126,161,0.06) 0%, rgba(26,37,51,0.9) 100%)" }}
       >
         <div className="relative w-full h-40 overflow-hidden" style={{ background: "rgba(255,255,255,0.03)" }}>
           {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]" />
+            <Image src={product.image_url} alt={product.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.07]" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/10">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,8 +64,8 @@ function RelatedCard({ product, index }) {
           )}
         </div>
         <div className="p-4">
-          {product.subcategory && (
-            <span className="text-[10px] font-bold font-body uppercase tracking-wide text-brand-primary">{product.subcategory}</span>
+          {(product.subcategory_name || product.subcategory) && (
+            <span className="text-[10px] font-bold font-body uppercase tracking-wide text-brand-primary">{product.subcategory_name || product.subcategory}</span>
           )}
           <h3 className="font-heading font-bold text-white text-sm leading-snug mt-1 line-clamp-2 group-hover:text-brand-accent transition-colors duration-200">
             {product.name}
@@ -100,13 +100,30 @@ export default function ProductDetailPage() {
       const { data: cat } = await supabase.from("categories").select("name").eq("slug", prod.category_slug).single();
       setCategoryName(cat?.name || prod.category_slug);
 
-      const { data: related } = await supabase
-        .from("products")
-        .select("id,name,slug,image_url,subcategory,brand")
-        .eq("category_slug", prod.category_slug)
-        .neq("id", prod.id)
-        .limit(4);
-      setRelatedProducts(related || []);
+      // Prefer same subcategory, fall back to same category
+      let related = [];
+      if (prod.subcategory_id) {
+        const { data: sameSubcat } = await supabase
+          .from("products")
+          .select("id,name,slug,image_url,subcategory,subcategory_name,brand")
+          .eq("category_slug", prod.category_slug)
+          .eq("subcategory_id", prod.subcategory_id)
+          .neq("id", prod.id)
+          .limit(4);
+        related = sameSubcat || [];
+      }
+      if (related.length < 4) {
+        const excludeIds = [prod.id, ...related.map(r => r.id)];
+        let catQuery = supabase
+          .from("products")
+          .select("id,name,slug,image_url,subcategory,subcategory_name,brand")
+          .eq("category_slug", prod.category_slug)
+          .limit(4 - related.length);
+        excludeIds.forEach(id => { catQuery = catQuery.neq("id", id); });
+        const { data: sameCat } = await catQuery;
+        related = [...related, ...(sameCat || [])];
+      }
+      setRelatedProducts(related);
       setLoading(false);
     }
     load();
@@ -116,7 +133,7 @@ export default function ProductDetailPage() {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-[#0a0f18] flex flex-col items-center justify-center gap-5 px-6 text-center">
+      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center gap-5 px-6 text-center">
         <div className="w-20 h-20 rounded-2xl border border-white/10 flex items-center justify-center" style={{ background: "rgba(43,126,161,0.07)" }}>
           <svg className="w-9 h-9 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11" />
@@ -139,11 +156,12 @@ export default function ProductDetailPage() {
   const whatsappMessage = encodeURIComponent(
     `Hi, I'm interested in ${product.name}${product.model_number ? ` (${product.model_number})` : ""}. Please share pricing and availability.`
   );
-  const whatsappUrl = `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919849304010";
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
   const inquiryUrl = `/contact?product=${encodeURIComponent(product.name)}&category=${product.category_slug}`;
 
-  // Subcategory slug for breadcrumb
-  const subSlug = slugify(product.subcategory || "");
+  const subcategoryLabel = product.subcategory_name || product.subcategory || "";
+  const subSlug = slugify(subcategoryLabel);
 
   return (
     <>
@@ -160,10 +178,10 @@ export default function ProductDetailPage() {
                 <Link href={`/products/${product.category_slug}`} className="hover:text-white/60 transition-colors">{categoryName}</Link>
               </>
             )}
-            {product.subcategory && (
+            {subcategoryLabel && (
               <>
                 <svg className="w-3 h-3 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                <Link href={`/products/${product.category_slug}/${subSlug}`} className="hover:text-white/60 transition-colors">{product.subcategory}</Link>
+                <Link href={`/products/${product.category_slug}?sub=${subSlug}`} className="hover:text-white/60 transition-colors">{subcategoryLabel}</Link>
               </>
             )}
             <svg className="w-3 h-3 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -173,7 +191,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* ── Main Detail ── */}
-      <section className="bg-[#0a0f18] py-12 md:py-16">
+      <section className="bg-brand-dark py-12 md:py-16">
         {/* Subtle grid texture */}
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "52px 52px" }} />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -187,16 +205,23 @@ export default function ProductDetailPage() {
               >
                 <AnimatePresence mode="wait">
                   {activeImage ? (
-                    <motion.img
+                    <motion.div
                       key={activeImage}
-                      src={activeImage}
-                      alt={product.name}
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 1.01 }}
                       transition={{ duration: 0.28 }}
-                      className="w-full h-full object-contain p-6"
-                    />
+                      className="absolute inset-6"
+                    >
+                      <Image
+                        src={activeImage}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="object-contain"
+                        priority
+                      />
+                    </motion.div>
                   ) : (
                     <motion.div key="no-image" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full flex flex-col items-center justify-center gap-3 text-white/10">
                       <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,38 +247,26 @@ export default function ProductDetailPage() {
                         activeImage === img ? "border-brand-primary shadow-md shadow-brand-primary/20 scale-105" : "border-white/10 hover:border-brand-primary/40"
                       }`}
                     >
-                      <img src={img} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
+                      <Image src={img} alt={`View ${i + 1}`} fill sizes="72px" className="object-cover" />
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Mobile CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 lg:hidden pt-2">
-                <Link href={inquiryUrl} className="flex-1 flex items-center justify-center gap-2 bg-brand-primary text-white font-semibold font-body py-3.5 rounded-xl hover:bg-brand-primary/90 transition-all hover:shadow-lg hover:shadow-brand-primary/20">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                  Send Inquiry
-                </Link>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold font-body px-6 py-3.5 rounded-xl hover:bg-[#20bc5c] transition-colors">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.526 5.855L.092 23.093a.75.75 0 00.815.815l5.238-1.434A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.86 0-3.619-.476-5.147-1.313l-.37-.214-3.856 1.054 1.054-3.856-.214-.37A9.94 9.94 0 012 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z" />
-                  </svg>
-                  WhatsApp
-                </a>
-              </div>
+              {/* Spacer so content isn't hidden behind fixed mobile bar */}
+              <div className="lg:hidden h-20" />
             </div>
 
             {/* ── RIGHT: Details ── */}
             <div className="space-y-6">
               {/* Pills */}
               <div className="flex flex-wrap gap-2">
-                {product.subcategory && (
+                {subcategoryLabel && (
                   <Link
-                    href={`/products/${product.category_slug}/${subSlug}`}
+                    href={`/products/${product.category_slug}?sub=${subSlug}`}
                     className="text-xs font-bold font-body uppercase tracking-wide px-3 py-1.5 rounded-full bg-brand-primary/[0.1] text-brand-primary border border-brand-primary/20 hover:bg-brand-primary/20 transition-colors"
                   >
-                    {product.subcategory}
+                    {subcategoryLabel}
                   </Link>
                 )}
                 {product.category_slug && (
@@ -334,6 +347,32 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Mobile Sticky CTA Bar ── */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex gap-3 px-4 py-3 border-t border-white/[0.08]"
+        style={{ background: "rgba(10,15,24,0.97)", backdropFilter: "blur(12px)" }}
+      >
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold font-body py-3 rounded-xl hover:bg-[#20bc5c] transition-colors text-sm"
+        >
+          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.122 1.526 5.855L.092 23.093a.75.75 0 00.815.815l5.238-1.434A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.86 0-3.619-.476-5.147-1.313l-.37-.214-3.856 1.054 1.054-3.856-.214-.37A9.94 9.94 0 012 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z" />
+          </svg>
+          WhatsApp
+        </a>
+        <Link
+          href={inquiryUrl}
+          className="flex-1 flex items-center justify-center gap-2 border border-brand-primary text-brand-primary font-semibold font-body py-3 rounded-xl hover:bg-brand-primary hover:text-white transition-all text-sm"
+        >
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+          Send Inquiry
+        </Link>
+      </div>
 
       {/* ── Related Products — dark ── */}
       {relatedProducts.length > 0 && (

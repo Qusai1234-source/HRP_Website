@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Package } from 'lucide-react'
 import { getImageUrl, truncate } from '@/app/lib/utils'
 
@@ -29,11 +30,12 @@ function ProductCard({ product }) {
                 {/* Image area */}
                 <div className="aspect-[4/3] bg-brand-light relative overflow-hidden">
                     {imgSrc ? (
-                        <img
+                        <Image
                             src={imgSrc}
                             alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -42,12 +44,12 @@ function ProductCard({ product }) {
                     )}
 
                     {/* Category badge */}
-                    {product.category && (
+                    {product.category_slug && (
                         <span
-                            className="absolute top-3 left-3 px-2.5 py-1 rounded-full font-body text-xs font-medium text-white"
+                            className="absolute top-3 left-3 px-2.5 py-1 rounded-full font-body text-xs font-medium text-white capitalize"
                             style={{ background: 'rgba(26,37,51,0.82)', backdropFilter: 'blur(6px)' }}
                         >
-                            {product.category}
+                            {product.category_slug.replace(/-/g, ' ')}
                         </span>
                     )}
                 </div>

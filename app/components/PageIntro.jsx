@@ -61,7 +61,7 @@ export default function PageIntro() {
                 style={{ clipPath: overlayClip, zIndex: 200 }}
             >
                 {/* Base dark fill */}
-                <div className="absolute inset-0 bg-[#0d1520]" />
+                <div className="absolute inset-0 bg-brand-dark" />
 
                 {/* Fine horizontal scanline texture on the dark panel — CRT/industrial feel */}
                 <div

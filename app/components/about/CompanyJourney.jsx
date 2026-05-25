@@ -37,7 +37,7 @@ const MILESTONES = [
     alt: "Industrial partnership and engineering",
     stat: "10+ Brand Partners",
     tag: "Partnerships · Certification",
-    showBrands: false,   // ← Brand logos row injects right after this milestone
+    showBrands: false,    // ← Brand logos row injects right after this milestone
   },
   {
     year: "2018",
@@ -267,57 +267,7 @@ function MilestoneRow({ m, index }) {
 /* ─────────────────────────────────────────────────────────────
    CLOSING CTA SECTION
 ───────────────────────────────────────────────────────────── */
-function ClosingCTA() {
-  const [ref, visible] = useReveal(0.2);
 
-  return (
-    <div ref={ref} className={`hrptl-cta-wrap ${visible ? "hrptl-cta--on" : ""}`}>
-      <div className="hrptl-cta-bg" />
-      <div className="hrptl-cta-glow" />
-
-      <div className="hrptl-cta-inner">
-        <p className="hrptl-cta-eyebrow">Ready to Work Together?</p>
-
-        <h2 className="hrptl-cta-h2">
-          Your Reliable Industrial<br />
-          <em>Supply Partner Awaits</em>
-        </h2>
-
-        <p className="hrptl-cta-sub">
-          Whether you need a single precision component or a complete supply chain solution —
-          HRP has the product, the expertise, and the commitment to deliver.
-        </p>
-
-        <div className="hrptl-cta-stats">
-          {[
-            { n: "44+", l: "Years Experience" },
-            { n: "100K+", l: "Active Clients" },
-            { n: "10K+", l: "Products" },
-            { n: "Pan India", l: "Served" },
-          ].map((s) => (
-            <div key={s.l} className="hrptl-cta-stat">
-              <span className="hrptl-cta-stat-n">{s.n}</span>
-              <span className="hrptl-cta-stat-l">{s.l}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="hrptl-cta-btns">
-          <Link href="/products" className="hrptl-cta-btn-primary">
-            Explore Our Products
-          </Link>
-          <Link href="/contact" className="hrptl-cta-btn-secondary">
-            Get a Custom Quote
-          </Link>
-        </div>
-
-        <p className="hrptl-cta-trust">
-          ✓ Same-week quotations &nbsp;&nbsp; ✓ Pan-India delivery &nbsp;&nbsp; ✓ Authorised brand distributor
-        </p>
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
    MAIN EXPORT
@@ -919,7 +869,6 @@ export default function CompanyJourney() {
         </div>
 
         {/* CLOSING CTA */}
-        <ClosingCTA />
 
       </section>
     </>

@@ -1,21 +1,24 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { getWhatsAppUrl } from "@/app/lib/utils";
+import { supabase } from "@/app/lib/supabase";
 
-// TODO: Replace with real client data before launch
 const CONTACT = {
-    phone: "+91 9014538495",
-    email: "info@hrpvizag.com",
-    address: "Your City, State — India",
+    phone: "+91 98493 04010",
+    email: "info@hrpindustrial.in",
+    address: "Hyderabad, Telangana, India",
 };
 
-const PRODUCT_CATEGORIES = [
-    "SS Bellows",
-    "Hydraulic Hoses",
-    "Pneumatic Hoses",
-    "Pressure Gauges",
-    "Valves",
-    "Fittings",
+const FALLBACK_CATEGORIES = [
+    { slug: "bellows", name: "SS Bellows" },
+    { slug: "hydraulics", name: "Hydraulic Hoses" },
+    { slug: "pneumatics", name: "Pneumatic Hoses" },
+    { slug: "instrumentation", name: "Pressure Gauges" },
+    { slug: "valves", name: "Valves" },
+    { slug: "rubber", name: "Rubber Products" },
 ];
 
 const QUICK_LINKS = [
@@ -46,6 +49,25 @@ function FooterLink({ href, children }) {
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
+    const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("categories")
+                    .select("id, name, slug")
+                    .order("sort_order", { ascending: true })
+                    .limit(6);
+                if (error) throw error;
+                if (!cancelled && data && data.length > 0) setCategories(data);
+            } catch (err) {
+                console.warn("[Footer] Could not fetch categories:", err?.message);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     return (
         <footer className="bg-brand-dark border-t border-white/5">
@@ -55,10 +77,18 @@ export default function Footer() {
                     {/* Col 1 — Brand */}
                     <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white">
-                                <img src="/images/hrp_logo.png" alt="HRP logo" />
+                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white overflow-hidden">
+                                <img
+                                    src="/images/hrp_logo.png"
+                                    alt="HRP logo"
+                                    width={36}
+                                    height={36}
+                                    className="w-full h-full object-contain"
+                                />
                             </div>
-                            <span className="font-heading font-bold text-white text-lg">Hydraulic &Rubber Products</span>
+                            <span className="font-heading font-bold text-white text-lg">
+                                Hydraulics & Rubber Products
+                            </span>
                         </div>
                         <p className="font-body text-white/45 text-sm leading-relaxed max-w-[240px]">
                             Supplying high-quality industrial products — SS Bellows, Hoses, Gauges, Valves and Fittings.
@@ -93,10 +123,10 @@ export default function Footer() {
                     <div>
                         <FooterHeading>Products</FooterHeading>
                         <ul className="space-y-3">
-                            {PRODUCT_CATEGORIES.map((cat) => (
-                                <li key={cat}>
-                                    <FooterLink href="/products">
-                                        {cat}
+                            {categories.map((cat) => (
+                                <li key={cat.slug}>
+                                    <FooterLink href={`/products/${cat.slug}`}>
+                                        {cat.name}
                                     </FooterLink>
                                 </li>
                             ))}
@@ -131,7 +161,7 @@ export default function Footer() {
             </div>
 
             {/* Bottom bar */}
-            <div className="border-t border-white/5 pb-12">
+            <div className="border-t border-white/5">
                 <div className="container-hrp py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <p className="font-body text-white/25 text-xs">
                         © {currentYear} HRP. All rights reserved.

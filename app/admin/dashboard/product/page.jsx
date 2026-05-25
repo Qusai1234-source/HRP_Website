@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/app/lib/supabase";
+import * as XLSX from "xlsx";
 
 /* ─── helpers ───────────────────────────────────────────────────────────────── */
 function slugify(str) {
@@ -26,37 +27,38 @@ const EMPTY = {
   image_url: "", gallery_urls: [], specs: [], is_featured: false, sort_order: 0,
 };
 
-/* ─── S (styles object) ─────────────────────────────────────────────────────── */
+/* ─── S (styles object) — DARK ADMIN THEME ──────────────────────────────────── */
 const S = {
   page: { padding: "28px 28px 60px", fontFamily: "'Inter',sans-serif", minHeight: "100vh" },
-  h1: { fontSize: 22, fontWeight: 700, color: "#1A2533", margin: 0 },
-  sub: { fontSize: 13, color: "#888", marginTop: 3 },
+  h1: { fontSize: 22, fontWeight: 700, color: "#ffffff", margin: 0 },
+  sub: { fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 3 },
   row: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" },
   btnPri: { background: "#2B7EA1", color: "#fff", border: "none", borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 },
-  btnSec: { background: "#F5F5F5", color: "#555", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
-  input: { width: "100%", padding: "9px 12px", border: "1px solid #E5E7EB", borderRadius: 9, fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
-  select: { padding: "9px 12px", border: "1px solid #E5E7EB", borderRadius: 9, fontSize: 13, outline: "none", background: "#fff", cursor: "pointer", fontFamily: "inherit" },
-  label: { display: "block", fontSize: 12, fontWeight: 600, color: "#555", marginBottom: 6 },
+  btnSec: { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "8px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+  input: { width: "100%", padding: "9px 12px", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "inherit", background: "rgba(255,255,255,0.06)", color: "#fff" },
+  select: { padding: "9px 12px", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, fontSize: 13, outline: "none", background: "#1a2535", color: "#fff", cursor: "pointer", fontFamily: "inherit" },
+  label: { display: "block", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 6 },
   table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: { padding: "11px 14px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "1px solid #F0F0F0", background: "#FAFAFA", fontSize: 12 },
-  td: { padding: "12px 14px", borderBottom: "1px solid #F7F7F7", verticalAlign: "middle" },
-  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(3px)", zIndex: 1000 },
-  drawer: { position: "fixed", right: 0, top: 0, bottom: 0, width: "min(660px,100vw)", background: "#fff", boxShadow: "-4px 0 40px rgba(0,0,0,0.15)", zIndex: 1001, overflowY: "auto", display: "flex", flexDirection: "column" },
-  dHead: { padding: "20px 24px", borderBottom: "1px solid #F0F0F0", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 10 },
+  th: { padding: "11px 14px", textAlign: "left", fontWeight: 600, color: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase" },
+  td: { padding: "12px 14px", borderBottom: "1px solid rgba(255,255,255,0.04)", verticalAlign: "middle" },
+  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", zIndex: 1000 },
+  drawer: { position: "fixed", right: 0, top: 0, bottom: 0, width: "min(660px,100vw)", background: "#0E1520", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "-8px 0 48px rgba(0,0,0,0.5)", zIndex: 1001, overflowY: "auto", display: "flex", flexDirection: "column" },
+  dHead: { padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#0E1520", zIndex: 10 },
   dBody: { padding: "24px", flex: 1 },
-  dFoot: { padding: "16px 24px", borderTop: "1px solid #F0F0F0", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, position: "sticky", bottom: 0, background: "#fff" },
+  dFoot: { padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, position: "sticky", bottom: 0, background: "#0E1520" },
   fg: { marginBottom: 18 },
   row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 },
   chip: (active) => ({
     padding: "5px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600,
-    cursor: "pointer", border: active ? "1px solid #2B7EA1" : "1px solid #E5E7EB",
-    background: active ? "#2B7EA1" : "#fff", color: active ? "#fff" : "#666",
+    cursor: "pointer", border: active ? "1px solid #2B7EA1" : "1px solid rgba(255,255,255,0.1)",
+    background: active ? "#2B7EA1" : "rgba(255,255,255,0.04)", color: active ? "#fff" : "rgba(255,255,255,0.5)",
     transition: "all 0.15s", whiteSpace: "nowrap",
   }),
   badge: (color) => ({
     display: "inline-block", padding: "3px 9px", borderRadius: 20, fontSize: 11, fontWeight: 600,
-    background: color === "green" ? "#DCFCE7" : color === "blue" ? "#EFF6FF" : "#F3F4F6",
-    color: color === "green" ? "#15803D" : color === "blue" ? "#2563EB" : "#555",
+    background: color === "green" ? "rgba(76,175,80,0.15)" : color === "blue" ? "rgba(43,126,161,0.15)" : "rgba(255,255,255,0.06)",
+    color: color === "green" ? "#4CAF50" : color === "blue" ? "#2B7EA1" : "rgba(255,255,255,0.4)",
+    border: color === "green" ? "1px solid rgba(76,175,80,0.3)" : color === "blue" ? "1px solid rgba(43,126,161,0.3)" : "1px solid rgba(255,255,255,0.1)",
   }),
 };
 
@@ -99,6 +101,14 @@ export default function AdminProductsPage() {
   const [galleryUploading, setGalleryUploading] = useState(false);
   const imgRef = useRef(null);
   const galleryRef = useRef(null);
+
+  /* ── specs import ── */
+  const [specImport, setSpecImport] = useState(null); // { rows: [{key,value}], source: 'csv'|'excel'|'image' }
+  const [specImporting, setSpecImporting] = useState(false); // image scan in progress
+  const [specImportErr, setSpecImportErr] = useState("");
+  const csvSpecRef = useRef(null);
+  const xlsxSpecRef = useRef(null);
+  const imgSpecRef = useRef(null);
 
   /* ─── fetch all data ─── */
   async function fetchAll() {
@@ -236,6 +246,136 @@ export default function AdminProductsPage() {
   const removeSpec = (i) => setForm((p) => ({ ...p, specs: p.specs.filter((_, idx) => idx !== i) }));
   const moveSpec = (i, dir) => setForm((p) => { const s = [...p.specs]; const j = i + dir; if (j < 0 || j >= s.length) return p;[s[i], s[j]] = [s[j], s[i]]; return { ...p, specs: s }; });
 
+  /* ─── specs import helpers ─── */
+
+  // Commit the previewed rows into the form
+  function commitSpecImport(mode) {
+    if (!specImport) return;
+    const rows = specImport.rows.filter((r) => r.key.trim());
+    setForm((p) => ({
+      ...p,
+      specs: mode === "replace" ? rows : [...p.specs, ...rows],
+    }));
+    setSpecImport(null);
+    setSpecImportErr("");
+  }
+
+  // CSV / TSV parser — handles comma, semicolon, tab delimiters
+  function parseCSVText(text) {
+    const lines = text.trim().split(/\r?\n/).filter(Boolean);
+    // Auto-detect delimiter from first line
+    const first = lines[0] || "";
+    const delim = first.includes("\t") ? "\t" : first.includes(";") ? ";" : ",";
+
+    return lines
+      .map((line) => {
+        // Handle quoted fields
+        const cols = [];
+        let cur = "";
+        let inQuote = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if ((ch === '"' || ch === "'") && !inQuote) { inQuote = ch; continue; }
+          if (ch === inQuote) { inQuote = false; continue; }
+          if (ch === delim && !inQuote) { cols.push(cur.trim()); cur = ""; continue; }
+          cur += ch;
+        }
+        cols.push(cur.trim());
+        return cols;
+      })
+      .filter((cols) => cols.length >= 2 && cols[0])
+      .map(([key, value]) => ({ key: key.trim(), value: (value || "").trim() }));
+  }
+
+  // CSV file handler
+  function handleCSVImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setSpecImportErr("");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const rows = parseCSVText(ev.target.result);
+        if (!rows.length) { setSpecImportErr("No valid rows found. Make sure the file has two columns: Key and Value."); return; }
+        setSpecImport({ rows, source: "csv" });
+      } catch {
+        setSpecImportErr("Could not parse the CSV file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Excel file handler — uses xlsx package
+  function handleExcelImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setSpecImportErr("");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const wb = XLSX.read(ev.target.result, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        // sheet_to_json with header:1 gives [[col1,col2],...] rows
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" })
+          .filter((row) => row.length >= 2 && String(row[0]).trim())
+          .map((row) => ({ key: String(row[0]).trim(), value: String(row[1] ?? "").trim() }));
+        if (!rows.length) { setSpecImportErr("No valid rows found. Make sure column A = Key, column B = Value."); return; }
+        setSpecImport({ rows, source: "excel" });
+      } catch {
+        setSpecImportErr("Could not read the Excel file. Make sure it's a valid .xlsx or .xls file.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // Image handler — sends to /api/extract-specs (Anthropic vision)
+  async function handleImageImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setSpecImportErr("");
+    setSpecImporting(true);
+
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = (ev) => {
+          // ev.target.result is "data:image/jpeg;base64,XXXX"
+          const b64 = ev.target.result.split(",")[1];
+          res(b64);
+        };
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+
+      const resp = await fetch("/api/extract-specs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mediaType: file.type }),
+      });
+
+      const json = await resp.json();
+      if (!resp.ok || json.error) {
+        setSpecImportErr(json.error || "Image scan failed.");
+        setSpecImporting(false);
+        return;
+      }
+
+      if (!json.specs?.length) {
+        setSpecImportErr("No specifications could be extracted from this image. Try a clearer photo of a spec table.");
+        setSpecImporting(false);
+        return;
+      }
+
+      setSpecImport({ rows: json.specs, source: "image" });
+    } catch {
+      setSpecImportErr("Failed to reach the image scan service. Check your network.");
+    }
+    setSpecImporting(false);
+  }
+
   /* ─── subcat management ─── */
   function openAddSubcat() {
     setSubcatForm({ name: "", category_slug: activeCat === "all" ? (categories[0]?.slug || "") : activeCat });
@@ -289,7 +429,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* ── Category tabs ── */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #F0F0F0", marginBottom: 0, overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 0, overflowX: "auto" }}>
         {[{ slug: "all", name: "All" }, ...categories].map((cat) => {
           const isActive = activeCat === cat.slug;
           const count = cat.slug === "all" ? products.length : products.filter((p) => p.category_slug === cat.slug).length;
@@ -299,13 +439,13 @@ export default function AdminProductsPage() {
               onClick={() => { setActiveCat(cat.slug); setActiveSubcat("all"); }}
               style={{
                 padding: "10px 16px", fontSize: 13, fontWeight: 600, border: "none", background: "none",
-                color: isActive ? "#2B7EA1" : "#888", cursor: "pointer", whiteSpace: "nowrap",
+                color: isActive ? "#2B7EA1" : "rgba(255,255,255,0.4)", cursor: "pointer", whiteSpace: "nowrap",
                 borderBottom: isActive ? "2.5px solid #2B7EA1" : "2.5px solid transparent",
                 transition: "all 0.15s",
               }}
             >
               {cat.name}
-              <span style={{ marginLeft: 6, fontSize: 11, padding: "1px 6px", borderRadius: 20, background: isActive ? "#2B7EA1" : "#F0F0F0", color: isActive ? "#fff" : "#888" }}>
+              <span style={{ marginLeft: 6, fontSize: 11, padding: "1px 6px", borderRadius: 20, background: isActive ? "#2B7EA1" : "rgba(255,255,255,0.07)", color: isActive ? "#fff" : "rgba(255,255,255,0.35)" }}>
                 {count}
               </span>
             </button>
@@ -315,7 +455,7 @@ export default function AdminProductsPage() {
 
       {/* ── Subcategory chips (only when a category is selected) ── */}
       {activeCat !== "all" && (
-        <div style={{ display: "flex", gap: 8, padding: "12px 0", flexWrap: "wrap", borderBottom: "1px solid #F7F7F7", marginBottom: 0 }}>
+        <div style={{ display: "flex", gap: 8, padding: "12px 0", flexWrap: "wrap", borderBottom: "1px solid rgba(255,255,255,0.05)", marginBottom: 0 }}>
           <button style={S.chip(activeSubcat === "all")} onClick={() => setActiveSubcat("all")}>All subcategories</button>
           {filteredSubcats.map((sc) => (
             <div key={sc.id} style={{ display: "flex", alignItems: "center", gap: 0 }}>
@@ -328,14 +468,14 @@ export default function AdminProductsPage() {
               <button
                 onClick={() => openEditSubcat(sc)}
                 title="Edit subcategory"
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#CCC", padding: "0 2px", fontSize: 11 }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", padding: "0 2px", fontSize: 11 }}
               >
                 ✎
               </button>
             </div>
           ))}
           {filteredSubcats.length === 0 && (
-            <span style={{ fontSize: 12, color: "#BBB", alignSelf: "center" }}>No subcategories yet — click "+ Subcategory" to add.</span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", alignSelf: "center" }}>No subcategories yet — click "+ Subcategory" to add.</span>
           )}
         </div>
       )}
@@ -361,17 +501,17 @@ export default function AdminProductsPage() {
       </div>
 
       {/* ── Table ── */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #F0F0F0", overflow: "hidden" }}>
+      <div style={{ background: "rgba(255,255,255,0.025)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", overflow: "hidden" }}>
         {loading ? (
           <div style={{ padding: 48, textAlign: "center" }}>
             <div style={{ width: 26, height: 26, borderRadius: "50%", border: "2.5px solid #2B7EA1", borderTopColor: "transparent", animation: "spin 0.7s linear infinite", margin: "0 auto 12px" }} />
-            <p style={{ color: "#AAA", fontSize: 13, margin: 0 }}>Loading…</p>
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 13, margin: 0 }}>Loading…</p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: 60, textAlign: "center" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>📦</div>
-            <p style={{ color: "#888", fontSize: 14, margin: 0 }}>
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 14, margin: 0 }}>
               {search ? `No products match "${search}"` : "No products in this view. Click \"Add Product\" to get started."}
             </p>
           </div>
@@ -389,44 +529,44 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((prod) => (
+              {filtered.map((prod, idx) => (
                 <tr key={prod.id}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#FAFBFC")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "")}
-                  style={{ transition: "background 0.12s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(43,126,161,0.06)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)")}
+                  style={{ transition: "background 0.12s", background: idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.012)" }}
                 >
                   {/* Name + thumb */}
                   <td style={S.td}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", background: "#F5F5F5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", background: "rgba(255,255,255,0.06)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
                         {prod.image_url ? (
                           <img src={prod.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <svg width="18" height="18" fill="none" stroke="#DDD" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         )}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, color: "#1A2533", marginBottom: 2, maxWidth: 200 }}>{prod.name}</div>
-                        <div style={{ fontSize: 11, color: "#AAA", fontFamily: "monospace" }}>{prod.slug}</div>
+                        <div style={{ fontWeight: 600, color: "rgba(255,255,255,0.9)", marginBottom: 2, maxWidth: 200 }}>{prod.name}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: "monospace" }}>{prod.slug}</div>
                       </div>
                     </div>
                   </td>
                   <td style={S.td}>
                     <span style={S.badge("blue")}>{catName(prod.category_slug)}</span>
                   </td>
-                  <td style={{ ...S.td, color: "#666", fontSize: 12 }}>{prod.subcategory_name || "—"}</td>
-                  <td style={{ ...S.td, color: "#666", fontSize: 12 }}>{prod.brand || "—"}</td>
+                  <td style={{ ...S.td, color: "rgba(255,255,255,0.45)", fontSize: 12 }}>{prod.subcategory_name || "—"}</td>
+                  <td style={{ ...S.td, color: "rgba(255,255,255,0.45)", fontSize: 12 }}>{prod.brand || "—"}</td>
                   <td style={S.td}>
                     {prod.is_featured ? <span style={S.badge("green")}>Featured</span> : <span style={S.badge("none")}>Standard</span>}
                   </td>
-                  <td style={{ ...S.td, color: "#AAA", fontSize: 12 }}>{timeAgo(prod.created_at)}</td>
+                  <td style={{ ...S.td, color: "rgba(255,255,255,0.25)", fontSize: 12 }}>{timeAgo(prod.created_at)}</td>
                   <td style={S.td}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button style={{ padding: "5px 11px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: "#EFF6FF", color: "#2563EB" }} onClick={() => openEdit(prod)}>Edit</button>
+                      <button style={{ padding: "5px 11px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(43,126,161,0.3)", background: "rgba(43,126,161,0.12)", color: "#2B7EA1" }} onClick={() => openEdit(prod)}>Edit</button>
                       <button
-                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: deletePending === prod.id ? "#DC2626" : "#FEE2E2", color: deletePending === prod.id ? "#fff" : "#DC2626", transition: "all 0.2s" }}
+                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: deletePending === prod.id ? "1px solid #ef4444" : "1px solid rgba(239,68,68,0.25)", background: deletePending === prod.id ? "rgba(239,68,68,0.25)" : "rgba(239,68,68,0.08)", color: "#ef4444", transition: "all 0.2s" }}
                         onClick={() => handleDelete(prod.id)}
                       >
                         {deletePending === prod.id ? "Confirm?" : "Delete"}
@@ -451,18 +591,18 @@ export default function AdminProductsPage() {
             {/* Header */}
             <div style={S.dHead}>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#1A2533" }}>{editId ? "Edit Product" : "Add Product"}</div>
-                <div style={{ fontSize: 12, color: "#AAA", marginTop: 2 }}>{editId ? "Update product details" : "Add a new product to the catalogue"}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{editId ? "Edit Product" : "Add Product"}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{editId ? "Update product details" : "Add a new product to the catalogue"}</div>
               </div>
-              <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#999" }}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={() => setOpen(false)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             {/* Body */}
             <div style={S.dBody}>
               {saveErr && (
-                <div style={{ background: "#FEE2E2", border: "1px solid #FECACA", borderRadius: 9, padding: "10px 14px", fontSize: 13, color: "#DC2626", marginBottom: 18 }}>{saveErr}</div>
+                <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9, padding: "10px 14px", fontSize: 13, color: "#f87171", marginBottom: 18 }}>{saveErr}</div>
               )}
 
               {/* Name */}
@@ -477,7 +617,7 @@ export default function AdminProductsPage() {
                 <label style={S.label}>URL Slug *</label>
                 <input style={{ ...S.input, fontFamily: "monospace", fontSize: 12 }} placeholder="auto-generated" value={form.slug}
                   onChange={(e) => { setSlugManual(true); setF("slug", slugify(e.target.value)); }} />
-                <div style={{ fontSize: 11, color: "#AAA", marginTop: 4 }}>URL: /products/item/<strong>{form.slug || "slug"}</strong></div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>URL: /products/item/<strong style={{ color: "rgba(255,255,255,0.5)" }}>{form.slug || "slug"}</strong></div>
               </div>
 
               {/* Category + Subcategory */}
@@ -509,7 +649,7 @@ export default function AdminProductsPage() {
                     {drawerSubcats.map((sc) => <option key={sc.id} value={sc.id}>{sc.name}</option>)}
                   </select>
                   {form.category_slug && drawerSubcats.length === 0 && (
-                    <div style={{ fontSize: 11, color: "#AAA", marginTop: 4 }}>No subcategories yet. Click "+ New" above.</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>No subcategories yet. Click "+ New" above.</div>
                   )}
                 </div>
               </div>
@@ -534,25 +674,157 @@ export default function AdminProductsPage() {
 
               {/* ── Specs Builder ── */}
               <div style={S.fg}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+
+                {/* Header row */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
                   <label style={{ ...S.label, margin: 0 }}>Specifications</label>
-                  <button onClick={addSpec} style={{ background: "#EFF6FF", color: "#2B7EA1", border: "1px solid #BFDBFE", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>+ Add Row</button>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+
+                    {/* CSV import */}
+                    <button
+                      onClick={() => { setSpecImport(null); setSpecImportErr(""); csvSpecRef.current?.click(); }}
+                      title="Import from CSV or TSV file"
+                      style={{ background: "rgba(141,198,63,0.1)", color: "#8DC63F", border: "1px solid rgba(141,198,63,0.3)", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+                    >
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      CSV
+                    </button>
+
+                    {/* Excel import */}
+                    <button
+                      onClick={() => { setSpecImport(null); setSpecImportErr(""); xlsxSpecRef.current?.click(); }}
+                      title="Import from Excel (.xlsx / .xls)"
+                      style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+                    >
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M10 3v18M14 3v18M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg>
+                      Excel
+                    </button>
+
+                    {/* Image scan */}
+                    <button
+                      onClick={() => { setSpecImport(null); setSpecImportErr(""); imgSpecRef.current?.click(); }}
+                      disabled={specImporting}
+                      title="Scan a datasheet image with AI"
+                      style={{ background: "rgba(168,85,247,0.1)", color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: specImporting ? "default" : "pointer", opacity: specImporting ? 0.7 : 1, display: "flex", alignItems: "center", gap: 5 }}
+                    >
+                      {specImporting ? (
+                        <>
+                          <svg style={{ animation: "spin 0.8s linear infinite" }} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          Scanning…
+                        </>
+                      ) : (
+                        <>
+                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                          Scan Image
+                        </>
+                      )}
+                    </button>
+
+                    {/* Manual add */}
+                    <button
+                      onClick={addSpec}
+                      style={{ background: "rgba(43,126,161,0.12)", color: "#2B7EA1", border: "1px solid rgba(43,126,161,0.3)", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      + Row
+                    </button>
+                  </div>
                 </div>
-                {form.specs.length === 0 ? (
-                  <div style={{ border: "1px dashed #E5E7EB", borderRadius: 10, padding: "18px", textAlign: "center", fontSize: 12, color: "#BBB" }}>
-                    No specs yet. Add key-value pairs like "Bore Size → 32 mm"
+
+                {/* Hidden file inputs */}
+                <input ref={csvSpecRef} type="file" accept=".csv,.tsv,.txt" style={{ display: "none" }} onChange={handleCSVImport} />
+                <input ref={xlsxSpecRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={handleExcelImport} />
+                <input ref={imgSpecRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageImport} />
+
+                {/* Import error */}
+                {specImportErr && (
+                  <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "9px 12px", fontSize: 12, color: "#f87171", marginBottom: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <svg width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {specImportErr}
+                    <button onClick={() => setSpecImportErr("")} style={{ marginLeft: "auto", background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", flexShrink: 0 }}>×</button>
+                  </div>
+                )}
+
+                {/* ── Import preview panel ── */}
+                {specImport && (
+                  <div style={{ background: "rgba(43,126,161,0.07)", border: "1px solid rgba(43,126,161,0.25)", borderRadius: 10, marginBottom: 12, overflow: "hidden" }}>
+                    {/* Preview header */}
+                    <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(43,126,161,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#2B7EA1", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                          {specImport.source === "csv" ? "📄 CSV" : specImport.source === "excel" ? "📊 Excel" : "🤖 AI Scan"} — {specImport.rows.length} rows detected
+                        </span>
+                        {specImport.source === "image" && (
+                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Review before importing</span>
+                        )}
+                      </div>
+                      <button onClick={() => setSpecImport(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>×</button>
+                    </div>
+
+                    {/* Scrollable preview rows */}
+                    <div style={{ maxHeight: 220, overflowY: "auto", padding: "8px 0" }}>
+                      {specImport.rows.map((row, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "5px 14px" }}>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", paddingRight: 8 }}>{row.key}</span>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(43,126,161,0.2)", display: "flex", gap: 8, alignItems: "center" }}>
+                      {form.specs.length > 0 ? (
+                        <>
+                          <button
+                            onClick={() => commitSpecImport("append")}
+                            style={{ background: "#2B7EA1", color: "#fff", border: "none", borderRadius: 7, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                          >
+                            ＋ Append to existing
+                          </button>
+                          <button
+                            onClick={() => commitSpecImport("replace")}
+                            style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 7, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                          >
+                            Replace all
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => commitSpecImport("replace")}
+                          style={{ background: "#2B7EA1", color: "#fff", border: "none", borderRadius: 7, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                        >
+                          Import {specImport.rows.length} rows
+                        </button>
+                      )}
+                      <button onClick={() => setSpecImport(null)} style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 7, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                        Discard
+                      </button>
+                      <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
+                        {form.specs.length > 0 ? `${form.specs.length} existing rows` : "No existing rows"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Manual spec rows */}
+                {form.specs.length === 0 && !specImport ? (
+                  <div style={{ border: "1px dashed rgba(255,255,255,0.1)", borderRadius: 10, padding: "20px 18px", textAlign: "center" }}>
+                    <svg width="22" height="22" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" viewBox="0 0 24 24" style={{ margin: "0 auto 8px", display: "block" }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                    </svg>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginBottom: 4 }}>No specs yet</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.12)" }}>Import from CSV / Excel / datasheet image, or click + Row</div>
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                     {form.specs.map((sp, i) => (
                       <div key={i} style={{ display: "flex", gap: 7, alignItems: "center" }}>
-                        <input style={{ ...S.input, flex: 1 }} placeholder="Key" value={sp.key} onChange={(e) => updateSpec(i, "key", e.target.value)} />
-                        <input style={{ ...S.input, flex: 1 }} placeholder="Value" value={sp.value} onChange={(e) => updateSpec(i, "value", e.target.value)} />
+                        <input style={{ ...S.input, flex: 1 }} placeholder="Key (e.g. Bore Size)" value={sp.key} onChange={(e) => updateSpec(i, "key", e.target.value)} />
+                        <input style={{ ...S.input, flex: 1 }} placeholder="Value (e.g. 32 mm)" value={sp.value} onChange={(e) => updateSpec(i, "value", e.target.value)} />
                         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                          <button onClick={() => moveSpec(i, -1)} style={{ background: "#F5F5F5", border: "none", borderRadius: 5, width: 24, height: 21, cursor: "pointer", fontSize: 9 }}>▲</button>
-                          <button onClick={() => moveSpec(i, 1)} style={{ background: "#F5F5F5", border: "none", borderRadius: 5, width: 24, height: 21, cursor: "pointer", fontSize: 9 }}>▼</button>
+                          <button onClick={() => moveSpec(i, -1)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", borderRadius: 5, width: 24, height: 21, cursor: "pointer", fontSize: 9 }}>▲</button>
+                          <button onClick={() => moveSpec(i, 1)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", borderRadius: 5, width: 24, height: 21, cursor: "pointer", fontSize: 9 }}>▼</button>
                         </div>
-                        <button onClick={() => removeSpec(i)} style={{ background: "#FEE2E2", border: "none", borderRadius: 7, width: 30, height: 36, cursor: "pointer", color: "#DC2626", fontSize: 14, flexShrink: 0 }}>×</button>
+                        <button onClick={() => removeSpec(i)} style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 7, width: 30, height: 36, cursor: "pointer", color: "#f87171", fontSize: 14, flexShrink: 0 }}>×</button>
                       </div>
                     ))}
                   </div>
@@ -564,9 +836,9 @@ export default function AdminProductsPage() {
                 <label style={S.label}>Main Image</label>
                 <div
                   onClick={() => imgRef.current?.click()}
-                  style={{ border: "2px dashed #E5E7EB", borderRadius: 12, padding: "18px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
+                  style={{ border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 12, padding: "18px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2B7EA1")}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#E5E7EB")}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
                 >
                   {form.image_url ? (
                     <div style={{ position: "relative", display: "inline-block" }}>
@@ -575,13 +847,13 @@ export default function AdminProductsPage() {
                         style={{ position: "absolute", top: -8, right: -8, width: 22, height: 22, borderRadius: "50%", background: "#DC2626", border: "none", color: "#fff", fontSize: 12, cursor: "pointer" }}>×</button>
                     </div>
                   ) : imgUploading ? (
-                    <div style={{ color: "#AAA", fontSize: 13 }}>Uploading…</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Uploading…</div>
                   ) : (
                     <div>
-                      <svg width="26" height="26" fill="none" stroke="#CCC" strokeWidth="1.5" viewBox="0 0 24 24" style={{ margin: "0 auto 8px" }}>
+                      <svg width="26" height="26" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" viewBox="0 0 24 24" style={{ margin: "0 auto 8px" }}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <div style={{ fontSize: 12, color: "#AAA" }}>Click to upload main image</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>Click to upload main image</div>
                     </div>
                   )}
                 </div>
@@ -596,7 +868,7 @@ export default function AdminProductsPage() {
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                     {form.gallery_urls.map((url, i) => (
                       <div key={i} style={{ position: "relative" }}>
-                        <img src={url} alt="" style={{ width: 68, height: 68, objectFit: "cover", borderRadius: 8, border: "1px solid #EEE" }} />
+                        <img src={url} alt="" style={{ width: 68, height: 68, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)" }} />
                         <button onClick={() => setForm((p) => ({ ...p, gallery_urls: p.gallery_urls.filter((_, idx) => idx !== i) }))}
                           style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", background: "#DC2626", border: "none", color: "#fff", fontSize: 10, cursor: "pointer" }}>×</button>
                       </div>
@@ -623,7 +895,7 @@ export default function AdminProductsPage() {
                       <div style={{ position: "absolute", top: 2, left: form.is_featured ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1A2533" }}>Featured</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>Featured</div>
                       <div style={{ fontSize: 11, color: "#AAA" }}>Show on homepage</div>
                     </div>
                   </label>
@@ -633,7 +905,7 @@ export default function AdminProductsPage() {
 
             {/* Footer */}
             <div style={S.dFoot}>
-              <button onClick={() => setOpen(false)} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid #E5E7EB", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "#fff", color: "#555" }}>Cancel</button>
+              <button onClick={() => setOpen(false)} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>Cancel</button>
               <button onClick={handleSave} disabled={saving} style={{ padding: "9px 22px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "#2B7EA1", color: "#fff", opacity: saving ? 0.7 : 1 }}>
                 {saving ? "Saving…" : editId ? "Update Product" : "Add Product"}
               </button>
@@ -651,17 +923,17 @@ export default function AdminProductsPage() {
           <div style={{ ...S.drawer, width: "min(440px,100vw)", zIndex: 1101 }}>
             <div style={S.dHead}>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#1A2533" }}>{editSubcatId ? "Edit Subcategory" : "Add Subcategory"}</div>
-                <div style={{ fontSize: 12, color: "#AAA", marginTop: 2 }}>Subcategories help customers filter within a category</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{editSubcatId ? "Edit Subcategory" : "Add Subcategory"}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>Subcategories help customers filter within a category</div>
               </div>
-              <button onClick={() => setSubcatDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#999" }}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={() => setSubcatDrawerOpen(false)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <div style={S.dBody}>
               {subcatErr && (
-                <div style={{ background: "#FEE2E2", border: "1px solid #FECACA", borderRadius: 9, padding: "10px 14px", fontSize: 13, color: "#DC2626", marginBottom: 18 }}>{subcatErr}</div>
+                <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9, padding: "10px 14px", fontSize: 13, color: "#f87171", marginBottom: 18 }}>{subcatErr}</div>
               )}
               <div style={S.fg}>
                 <label style={S.label}>Category *</label>
@@ -682,15 +954,15 @@ export default function AdminProductsPage() {
                     Existing in {catName(subcatForm.category_slug)}
                   </label>
                   {subcategories.filter((sc) => sc.category_slug === subcatForm.category_slug).length === 0 ? (
-                    <p style={{ fontSize: 12, color: "#BBB" }}>None yet.</p>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>None yet.</p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       {subcategories.filter((sc) => sc.category_slug === subcatForm.category_slug).map((sc) => (
-                        <div key={sc.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "#F9F9F9", borderRadius: 8, border: "1px solid #F0F0F0" }}>
-                          <span style={{ fontSize: 13, color: "#1A2533" }}>{sc.name}</span>
+                        <div key={sc.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.07)" }}>
+                          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)" }}>{sc.name}</span>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <button onClick={() => openEditSubcat(sc)} style={{ background: "#EFF6FF", border: "none", borderRadius: 6, padding: "4px 9px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "#2563EB" }}>Edit</button>
-                            <button onClick={() => deleteSubcat(sc.id)} style={{ background: "#FEE2E2", border: "none", borderRadius: 6, padding: "4px 9px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "#DC2626" }}>Delete</button>
+                            <button onClick={() => openEditSubcat(sc)} style={{ background: "rgba(43,126,161,0.12)", border: "1px solid rgba(43,126,161,0.3)", borderRadius: 6, padding: "4px 9px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "#2B7EA1" }}>Edit</button>
+                            <button onClick={() => deleteSubcat(sc.id)} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 6, padding: "4px 9px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "#f87171" }}>Delete</button>
                           </div>
                         </div>
                       ))}
@@ -701,7 +973,7 @@ export default function AdminProductsPage() {
             </div>
 
             <div style={S.dFoot}>
-              <button onClick={() => setSubcatDrawerOpen(false)} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid #E5E7EB", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "#fff", color: "#555" }}>Cancel</button>
+              <button onClick={() => setSubcatDrawerOpen(false)} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>Cancel</button>
               <button onClick={saveSubcat} disabled={subcatSaving} style={{ padding: "9px 22px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", background: "#2B7EA1", color: "#fff", opacity: subcatSaving ? 0.7 : 1 }}>
                 {subcatSaving ? "Saving…" : editSubcatId ? "Update" : "Add Subcategory"}
               </button>

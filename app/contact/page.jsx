@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
     Phone,
@@ -12,7 +13,6 @@ import {
     AlertCircle,
     Send,
 } from "lucide-react";
-import { supabase } from "@/app/lib/supabase";
 
 const fadeUp = (delay = 0) => ({
     initial: { opacity: 0, y: 24 },
@@ -21,9 +21,58 @@ const fadeUp = (delay = 0) => ({
     transition: { delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
 });
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919999999999";
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919849304010";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
 
-export default function ContactPage() {
+const localBusinessJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: "HRP Industrial Products",
+    url: BASE_URL,
+    telephone: "+91-98493-04010",
+    email: "info@hrpvizag.com",
+    address: {
+        "@type": "PostalAddress",
+        streetAddress: "Shop No G5 and G6, 28-13-20, Brindavan Rd, opp. Vishnu Residency, Suryabagh, Jagadamba Junction",
+        addressLocality: "Visakhapatnam",
+        addressRegion: "Andhra Pradesh",
+        postalCode: "530020",
+        addressCountry: "IN",
+    },
+    openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        opens: "09:00",
+        closes: "18:00",
+    },
+    description: "HRP Industrial Products — authorized distributor of SS Bellows, Hydraulic Hoses, Pneumatic Hoses, Pressure Gauges, Valves and Fittings in Visakhapatnam, India.",
+};
+
+// Fallback categories if fetch fails
+const FALLBACK_CATEGORIES = [
+    { slug: "instrumentation", name: "Instrumentation" },
+    { slug: "pneumatics", name: "Pneumatics" },
+    { slug: "hydraulics", name: "Hydraulics" },
+    { slug: "vacuum", name: "Vacuum Components" },
+    { slug: "valves", name: "Valves" },
+    { slug: "rubber", name: "Rubber Products" },
+    { slug: "power-tools", name: "Power Tools & Tools" },
+    { slug: "compressors", name: "Compressors" },
+    { slug: "paint", name: "Paint Equipment" },
+    { slug: "lifting", name: "Tackles & Lifting" },
+    { slug: "bellows", name: "SS Bellows" },
+    { slug: "other", name: "Other / Not Listed" },
+];
+
+// Google Maps embed for Jagadamba Junction, Visakhapatnam
+const MAPS_EMBED_URL =
+    "https://maps.google.com/maps?q=Hydraulics+And+Rubber+Products,+28-13-20,+Brindavan+Rd,+Jagadamba+Junction,+Visakhapatnam,+Andhra+Pradesh+530020&output=embed&z=16";
+
+const MAPS_LINK =
+    "https://maps.google.com/maps?q=Hydraulics+And+Rubber+Products,+Jagadamba+Junction,+Visakhapatnam";
+
+function ContactPageInner() {
+    const searchParams = useSearchParams();
     const [form, setForm] = useState({
         name: "",
         company: "",
@@ -33,6 +82,41 @@ export default function ContactPage() {
         message: "",
     });
     const [status, setStatus] = useState("idle"); // idle | loading | success | error
+    const [errorMsg, setErrorMsg] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [catsLoading, setCatsLoading] = useState(true);
+
+    // Pre-fill message if ?product= is in the URL
+    useEffect(() => {
+        const product = searchParams.get("product");
+        const category = searchParams.get("category");
+        if (product) {
+            setForm(prev => ({
+                ...prev,
+                message: `Hi, I'm interested in ${product}. Please share pricing and availability.`,
+                category: category || prev.category,
+            }));
+        }
+    }, [searchParams]);
+
+    // Fetch categories dynamically
+    useEffect(() => {
+        import("@/app/lib/supabase").then(({ supabase }) => {
+            supabase
+                .from("categories")
+                .select("id,name,slug")
+                .order("sort_order", { ascending: true })
+                .then(({ data, error }) => {
+                    if (error || !data?.length) setCategories(FALLBACK_CATEGORIES);
+                    else setCategories(data);
+                    setCatsLoading(false);
+                })
+                .catch(() => {
+                    setCategories(FALLBACK_CATEGORIES);
+                    setCatsLoading(false);
+                });
+        });
+    }, []);
 
     function handleChange(e) {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -42,22 +126,33 @@ export default function ContactPage() {
         e.preventDefault();
         if (!form.name || !form.phone || !form.message) return;
         setStatus("loading");
+        setErrorMsg("");
+
         try {
-            const { error } = await supabase.from("inquiries").insert([
-                {
-                    name: form.name,
-                    company: form.company || null,
-                    phone: form.phone,
-                    email: form.email || null,
-                    category: form.category || null,
-                    message: form.message,
-                },
-            ]);
-            if (error) throw error;
+            // ── Send to API (saves Supabase + emails business) ──────────────
+            const res = await fetch("/api/send-inquiry", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || "Failed to send inquiry.");
+            }
+
+            // ── Success: show state & open WhatsApp ─────────────────────────
             setStatus("success");
             setForm({ name: "", company: "", phone: "", email: "", category: "", message: "" });
-        } catch {
+
+            const waText = encodeURIComponent(
+                `Hi HRP, I just submitted an inquiry on your website.\nName: ${form.name}${form.company ? `\nCompany: ${form.company}` : ""}\nPhone: ${form.phone}\nMessage: ${form.message}`
+            );
+            window.open(`https://wa.me/${WHATSAPP}?text=${waText}`, "_blank", "noopener,noreferrer");
+
+        } catch (err) {
             setStatus("error");
+            setErrorMsg(err?.message || "Something went wrong. Please try WhatsApp instead.");
         }
     }
 
@@ -67,6 +162,11 @@ export default function ContactPage() {
 
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+            />
+
             {/* ── HERO ── */}
             <section
                 className="relative bg-brand-dark overflow-hidden"
@@ -142,7 +242,7 @@ export default function ContactPage() {
             </section>
 
             {/* ── MAIN CONTENT ── */}
-            <section className="bg-[#0a0f18] py-14 lg:py-20">
+            <section className="bg-brand-dark py-14 lg:py-20">
                 <div className="max-w-7xl mx-auto px-6 lg:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
 
@@ -174,7 +274,6 @@ export default function ContactPage() {
                                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                                         style={{ background: "rgba(141,198,63,0.15)" }}
                                     >
-                                        {/* WhatsApp icon */}
                                         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-brand-accent">
                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                                         </svg>
@@ -202,23 +301,23 @@ export default function ContactPage() {
                                 {
                                     icon: <Phone className="w-4 h-4" />,
                                     label: "Phone",
-                                    value: "+91 99999 99999",
+                                    value: "+91 98493 04010",
                                     sub: "Mon–Sat, 9am–6pm",
-                                    href: "tel:+919999999999",
+                                    href: "tel:+919849304010",
                                 },
                                 {
                                     icon: <Mail className="w-4 h-4" />,
                                     label: "Email",
-                                    value: "info@hrpindustrial.in",
+                                    value: "info@hrpvizag.com",
                                     sub: "We reply within a few hours",
-                                    href: "mailto:info@hrpindustrial.in",
+                                    href: "mailto:info@hrpvizag.com",
                                 },
                                 {
                                     icon: <MapPin className="w-4 h-4" />,
                                     label: "Location",
-                                    value: "Hyderabad, Telangana",
-                                    sub: "Pan-India delivery available",
-                                    href: null,
+                                    value: "Jagadamba Junction, Vizag",
+                                    sub: "Shop G5 & G6, Brindavan Rd, Visakhapatnam 530020",
+                                    href: MAPS_LINK,
                                 },
                                 {
                                     icon: <Clock className="w-4 h-4" />,
@@ -232,6 +331,8 @@ export default function ContactPage() {
                                     {item.href ? (
                                         <a
                                             href={item.href}
+                                            target={item.href.startsWith("http") ? "_blank" : undefined}
+                                            rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                                             className="group flex items-start gap-4 p-4 rounded-xl border border-white/[0.07] hover:border-brand-primary/30 hover:bg-brand-primary/5 transition-all duration-200"
                                         >
                                             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary flex-shrink-0 mt-0.5">
@@ -321,10 +422,10 @@ export default function ContactPage() {
                                             </div>
                                             <div>
                                                 <h3 className="font-heading font-bold text-white text-lg mb-2">
-                                                    Inquiry Received!
+                                                    Inquiry Sent!
                                                 </h3>
                                                 <p className="font-body text-white/50 text-sm max-w-xs">
-                                                    We&apos;ll get back to you shortly. For urgent needs, WhatsApp us directly.
+                                                    We&apos;ve received your message and WhatsApp has opened — we&apos;ll get back to you shortly.
                                                 </p>
                                             </div>
                                             <button
@@ -385,20 +486,17 @@ export default function ContactPage() {
                                                     onChange={handleChange}
                                                     className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-4 py-3 text-white/80 text-sm font-body focus:outline-none focus:border-brand-primary/50 focus:bg-white/[0.07] transition-all appearance-none"
                                                     style={{ colorScheme: "dark" }}
+                                                    suppressHydrationWarning
                                                 >
-                                                    <option value="">Select a category (optional)</option>
-                                                    <option value="instrumentation">Instrumentation</option>
-                                                    <option value="pneumatics">Pneumatics</option>
-                                                    <option value="hydraulics">Hydraulics</option>
-                                                    <option value="vacuum">Vacuum Components</option>
-                                                    <option value="valves">Valves</option>
-                                                    <option value="rubber">Rubber Products</option>
-                                                    <option value="power-tools">Power Tools & Tools</option>
-                                                    <option value="compressors">Compressors</option>
-                                                    <option value="paint">Paint Equipment</option>
-                                                    <option value="lifting">Tackles & Lifting</option>
-                                                    <option value="bellows">SS Bellows</option>
-                                                    <option value="other">Other / Not Listed</option>
+                                                    {catsLoading
+                                                        ? <option disabled>Loading categories…</option>
+                                                        : <>
+                                                            <option value="">Select a category (optional)</option>
+                                                            {categories.map(cat => (
+                                                                <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                                                            ))}
+                                                          </>
+                                                    }
                                                 </select>
                                             </div>
 
@@ -415,23 +513,25 @@ export default function ContactPage() {
                                                     required
                                                     rows={4}
                                                     className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-4 py-3 text-white/80 text-sm font-body placeholder-white/25 focus:outline-none focus:border-brand-primary/50 focus:bg-white/[0.07] transition-all resize-none"
+                                                    suppressHydrationWarning
                                                 />
                                             </div>
 
                                             {/* Error */}
                                             {status === "error" && (
-                                                <div className="flex items-center gap-2 text-red-400 text-xs font-body">
-                                                    <AlertCircle className="w-3.5 h-3.5" />
-                                                    Something went wrong. Please try WhatsApp instead.
+                                                <div className="flex items-start gap-2 text-red-400 text-xs font-body">
+                                                    <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                                                    <span>{errorMsg || "Something went wrong. Please try WhatsApp instead."}</span>
                                                 </div>
                                             )}
 
                                             {/* Submit */}
-                                            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                                            <div className="flex flex-col gap-3 pt-1">
                                                 <button
                                                     type="submit"
                                                     disabled={status === "loading"}
-                                                    className="btn-accent flex-1 justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    className="w-full inline-flex items-center justify-center gap-2.5 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold font-body px-7 py-3.5 rounded-xl transition-all hover:shadow-lg hover:shadow-brand-primary/25 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    suppressHydrationWarning
                                                 >
                                                     {status === "loading" ? (
                                                         <>
@@ -441,26 +541,15 @@ export default function ContactPage() {
                                                     ) : (
                                                         <>
                                                             <Send className="w-4 h-4" />
-                                                            Send Inquiry
+                                                            Send Inquiry — Email &amp; WhatsApp
                                                         </>
                                                     )}
                                                 </button>
-                                                <a
-                                                    href={`https://wa.me/${WHATSAPP}?text=${waMessage}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-brand-accent/25 text-brand-accent/80 hover:text-brand-accent hover:border-brand-accent/50 font-body text-sm tracking-wide transition-all duration-200 flex-shrink-0"
-                                                >
-                                                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                                                    </svg>
-                                                    WhatsApp
-                                                </a>
-                                            </div>
 
-                                            <p className="font-body text-white/25 text-xs">
-                                                * Required fields. We respect your privacy and never share your details.
-                                            </p>
+                                                <p className="font-body text-white/25 text-xs text-center">
+                                                    * Required. Submitting saves your inquiry, sends us an email, and opens WhatsApp with your message pre-filled.
+                                                </p>
+                                            </div>
                                         </form>
                                     )}
                                 </div>
@@ -469,7 +558,72 @@ export default function ContactPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ── MAP ── */}
+            <section className="bg-brand-dark border-t border-white/[0.06]">
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
+                    <motion.div
+                        {...fadeUp(0.1)}
+                        className="mb-8"
+                    >
+                        <p className="font-body text-brand-primary text-xs tracking-[0.2em] uppercase mb-3 flex items-center gap-2">
+                            <span className="inline-block w-8 h-px bg-brand-primary/60" />
+                            Find Us
+                        </p>
+                        <h2 className="font-heading font-bold text-white mb-1" style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)" }}>
+                            Visit Our Store
+                        </h2>
+                        <p className="font-body text-white/40 text-sm">
+                            Shop No G5 &amp; G6, 28-13-20, Brindavan Rd, opp. Vishnu Residency,<br />
+                            Suryabagh, Jagadamba Junction, Visakhapatnam — 530020
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        {...fadeUp(0.15)}
+                        className="relative rounded-2xl overflow-hidden border border-white/[0.08]"
+                        style={{ height: "420px" }}
+                    >
+                        {/* Decorative corner accent */}
+                        <div className="absolute top-0 left-0 right-0 h-px z-10 pointer-events-none"
+                            style={{ background: "linear-gradient(90deg, transparent, rgba(43,126,161,0.5) 40%, rgba(141,198,63,0.3) 70%, transparent)" }} />
+
+                        <iframe
+                            title="HRP Industrial Products — Visakhapatnam"
+                            src={MAPS_EMBED_URL}
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0, display: "block" }}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                        />
+                    </motion.div>
+
+                    {/* Open in Maps link */}
+                    <motion.div {...fadeUp(0.2)} className="mt-4 flex justify-end">
+                        <a
+                            href={MAPS_LINK}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-brand-primary hover:text-brand-accent text-sm font-body font-semibold transition-colors"
+                        >
+                            <MapPin className="w-4 h-4" />
+                            Open in Google Maps
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </a>
+                    </motion.div>
+                </div>
+            </section>
         </>
+    );
+}
+
+export default function ContactPage() {
+    return (
+        <Suspense fallback={null}>
+            <ContactPageInner />
+        </Suspense>
     );
 }
 
@@ -488,6 +642,7 @@ function Field({ label, name, type = "text", value, onChange, placeholder, requi
                 placeholder={placeholder}
                 required={required}
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-4 py-3 text-white/80 text-sm font-body placeholder-white/25 focus:outline-none focus:border-brand-primary/50 focus:bg-white/[0.07] transition-all"
+                suppressHydrationWarning
             />
         </div>
     );

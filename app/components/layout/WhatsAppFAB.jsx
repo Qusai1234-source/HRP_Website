@@ -9,8 +9,12 @@ export default function WhatsAppFAB() {
     const [tooltip, setTooltip] = useState(false);
 
     useEffect(() => {
-        const t = setTimeout(() => setVisible(true), 1200);
-        return () => clearTimeout(t);
+        const checkScroll = () => {
+            setVisible(window.scrollY > window.innerHeight * 0.85);
+        };
+        checkScroll();
+        window.addEventListener('scroll', checkScroll, { passive: true });
+        return () => window.removeEventListener('scroll', checkScroll);
     }, []);
 
     return (
