@@ -156,7 +156,7 @@ export default function ProductDetailPage() {
   const whatsappMessage = encodeURIComponent(
     `Hi, I'm interested in ${product.name}${product.model_number ? ` (${product.model_number})` : ""}. Please share pricing and availability.`
   );
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919849304010";
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919014538495";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
   const inquiryUrl = `/contact?product=${encodeURIComponent(product.name)}&category=${product.category_slug}`;
 

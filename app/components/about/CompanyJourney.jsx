@@ -1,99 +1,75 @@
 "use client";
+// app/components/about/CompanyJourney.jsx
+// About page hero + "Who We Are" intro + scroll-driven timeline
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 
 /* ─────────────────────────────────────────────────────────────
-   MILESTONE DATA
+   MILESTONE DATA — Accurate Hydraulics & Rubber Products company history
 ───────────────────────────────────────────────────────────── */
 const MILESTONES = [
   {
-    year: "1982",
-    label: "The Origin",
-    title: "A Single Vision,\nA Trusted Start",
-    body: "What began in a modest Hyderabad office with a catalogue of essential industrial components quietly grew into something much larger. HRP Industrial Products was founded on the belief that manufacturers deserve a reliable, knowledgeable supply partner — not just a vendor. From day one, precision and commitment defined every transaction.",
+    year: "1980",
+    label: "The Arrival",
+    title: "Recognising the\nCoromandel Opportunity",
+    body: "Founder Safdar Alimohammed Tambawala, originally from Sidhpur, Gujarat, recognised the untapped industrial potential of the Coromandel Coast and relocated to Visakhapatnam — laying the groundwork for what would become a multi-generational enterprise.",
     image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=900&q=80",
-    alt: "Industrial workshop at founding",
-    stat: "Est. 1983",
-    tag: "Origin · Hyderabad",
+    alt: "Industrial setting at founding",
+    stat: "Sidhpur → Vizag",
+    tag: "Origin · Coromandel Coast · Gujarat Roots",
     isFirst: true,
   },
   {
-    year: "2012",
-    label: "Chapter II",
-    title: "Expanding Into Hydraulics\n& Pneumatics",
-    body: "As demand grew beyond local workshops, HRP extended its reach into hydraulics, pneumatic systems, and industrial hose assemblies. The catalogue tripled. The client base doubled. What had started as a local trading operation was quickly becoming a full-spectrum industrial supply house.",
-    image: "https://images.unsplash.com/photo-1581093196277-9f608bb3b511?w=900&q=80",
-    alt: "Hydraulic industrial systems",
-    stat: "3× Product Range",
-    tag: "Hydraulics · Pneumatics",
-  },
-  {
-    year: "2015",
-    label: "Chapter III",
-    title: "Global Partnerships,\nLocal Trust",
-    body: "Recognition came not through advertising, but through reliability. By 2015, leading global manufacturers had extended their trust to HRP, bringing certified product lines and a new tier of industrial credibility. The partnerships forged in this era remain the backbone of our premium supply chain.",
-    image: "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=900&q=80",
-    alt: "Industrial partnership and engineering",
-    stat: "10+ Brand Partners",
-    tag: "Partnerships · Certification",
-    showBrands: false,    // ← Brand logos row injects right after this milestone
-  },
-  {
-    year: "2018",
-    label: "Chapter IV",
-    title: "A Network That\nSpans the Nation",
-    body: "What once served a single city now reached across India. Logistics infrastructure expanded. Delivery timelines tightened. HRP's reputation for same-week dispatch and consistent quality made it the preferred industrial supplier across 10+ cities — with operations growing year on year.",
-    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80",
-    alt: "Pan-India logistics and supply chain",
-    stat: "10+ Cities Served",
-    tag: "Pan-India · Logistics",
-  },
-  {
-    year: "2021",
-    label: "Chapter V",
-    title: "Engineering Depth\nat Scale",
-    body: "The company entered its most technically demanding era — instrumentation systems, vacuum components, SS bellows, compressors, and precision automation products now defined HRP's portfolio. Engineering depth had become the brand's true competitive advantage, separating us from generalist distributors.",
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80",
-    alt: "Precision engineering and instrumentation",
-    stat: "200+ Product SKUs",
-    tag: "Instrumentation · Vacuum · Bellows",
-  },
-  {
-    year: "2024",
-    label: "Chapter VI",
-    title: "Trusted Across\nEvery Sector",
-    body: "Manufacturing floors, automation labs, construction sites, and heavy industry operations — HRP had become the common thread. Over 200 clients across India now rely on a single industrial partner for every need. The name HRP has come to mean one thing: it will be there, on time, every time.",
-    image: "https://images.unsplash.com/photo-1492496913980-501348b61469?w=900&q=80",
-    alt: "Multi-sector industrial operations",
-    stat: "200+ Active Clients",
-    tag: "Manufacturing · Automation · Construction",
-  },
-  {
-    year: "2026",
-    label: "Present Day",
-    title: "Built to Last.\nBuilt to Grow.",
-    body: "Fifteen years of building trust, one delivery at a time. HRP today is more than a supplier — it is an industrial partner deeply woven into the operations of the clients it serves. The portfolio is wider, the network deeper, and the commitment to quality unchanged. The journey continues.",
+    year: "1983",
+    label: "Foundation",
+    title: "Calcutta Hardware\nand Tools Co.",
+    body: "The business was formally established under the name Calcutta Hardware and Tools Co., beginning operations as a hardware and tools stockist serving the emerging industrial corridor of Visakhapatnam.",
     image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=900&q=80",
-    alt: "HRP warehouse and operations team",
-    stat: "15+ Years Strong",
-    tag: "Legacy · Growth · Reliability",
+    alt: "Hardware and tools stockist operations",
+    stat: "Est. 1983",
+    tag: "Hardware · Tools · Industrial Stockist",
+  },
+  {
+    year: "1996",
+    label: "Second Generation",
+    title: "Fluid Mechanics &\nRubber Engineering",
+    body: "Mukarram Safdar Tambawala joined the business and drove an aggressive expansion into specialised product verticals — high-pressure hydraulic hose portfolios, custom rubber components, pneumatic control lines, and tier-1 brand representation. Hydraulics & Rubber Products's transformation from a general hardware dealer into a focused industrial solutions provider had begun.",
+    image: "https://images.unsplash.com/photo-1581093196277-9f608bb3b511?w=900&q=80",
+    alt: "Hydraulic and pneumatic industrial systems",
+    stat: "3× Product Range",
+    tag: "Hydraulics · Pneumatics · Rubber Engineering",
+  },
+  {
+    year: "2000",
+    label: "Rebranding",
+    title: "Hydraulics &\nRubber Products",
+    body: "To reflect the company's evolved identity and specialised focus, the business was officially renamed Hydraulics and Rubber Products (HRP) — a name that communicated engineering expertise and product depth to both local and national industrial clients.",
+    image: "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=900&q=80",
+    alt: "Industrial engineering and brand identity",
+    stat: "Hydraulics & Rubber Products Born",
+    tag: "Rebranding · Engineering Identity",
+  },
+  {
+    year: "2013",
+    label: "National Scale",
+    title: "Pan-India Industrial\nSupply Network",
+    body: "Huzaifa Sheik Shabbir Marhaba joined and took charge of corporate and national accounts. Under his leadership, Hydraulics & Rubber Products successfully built a robust national client portfolio — scaling from a regional powerhouse into a recognised Pan-India industrial supply network.",
+    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80",
+    alt: "Pan-India logistics and supply network",
+    stat: "Pan-India Network",
+    tag: "Corporate Accounts · National Expansion",
+  },
+  {
+    year: "Today",
+    label: "Present Day",
+    title: "A Name Synonymous\nWith Reliability",
+    body: "Hydraulics & Rubber Products now serves a diverse portfolio of clients across India's most demanding industrial verticals — maintaining the same commitment to precision and reliability that defined its founding. The name Hydraulics & Rubber Products has come to mean one thing: engineered reliability, every time.",
+    image: "https://images.unsplash.com/photo-1492496913980-501348b61469?w=900&q=80",
+    alt: "Hydraulics & Rubber Products industrial supply operations",
+    stat: "40+ Years Strong",
+    tag: "Industrial Excellence · National Reach",
     isLast: true,
   },
-];
-
-/* ─────────────────────────────────────────────────────────────
-   BRAND LOGOS DATA
-───────────────────────────────────────────────────────────── */
-const BRANDS = [
-  { name: "Festo", desc: "Pneumatics & Automation" },
-  { name: "Schmalz", desc: "Vacuum Technology" },
-  { name: "Indef", desc: "Lifting & Hoisting" },
-  { name: "Graco", desc: "Fluid Handling" },
-  { name: "Binks", desc: "Paint Equipment" },
-  { name: "Kito", desc: "Chain Hoists" },
-  { name: "Yale", desc: "Material Handling" },
-  { name: "Parker", desc: "Motion & Control" },
 ];
 
 /* ─────────────────────────────────────────────────────────────
@@ -113,32 +89,6 @@ function useReveal(threshold = 0.15) {
     return () => obs.disconnect();
   }, [threshold]);
   return [ref, visible];
-}
-
-/* ─────────────────────────────────────────────────────────────
-   BRANDS ROW COMPONENT
-───────────────────────────────────────────────────────────── */
-function BrandsRow() {
-  const [ref, visible] = useReveal(0.15);
-  return (
-    <div ref={ref} className={`hrptl-brands-wrap ${visible ? "hrptl-brands--on" : ""}`}>
-      <div className="hrptl-brands-header">
-        <span className="hrptl-brands-eyebrow">Strategic Capabilities</span>
-        <p className="hrptl-brands-sub">
-          Authorized distribution channels and direct partnerships that reinforce our global engineering standards.
-        </p>
-      </div>
-      <div className="hrptl-brands-grid">
-        {BRANDS.map((b) => (
-          <div key={b.name} className="hrptl-brand-card">
-            <div className="hrptl-brand-name">{b.name}</div>
-            <div className="hrptl-brand-desc">{b.desc}</div>
-          </div>
-        ))}
-      </div>
-      <p className="hrptl-brands-note">*All trademarks belong to their respective certified manufacturers.</p>
-    </div>
-  );
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -182,92 +132,83 @@ function MilestoneRow({ m, index }) {
   const [imgRef, imgVisible] = useReveal(0.08);
 
   return (
-    <>
-      <div className="hrptl-row" ref={rowRef}>
+    <div className="hrptl-row" ref={rowRef}>
 
-        {/* SPINE NODE */}
-        <div className={`hrptl-node ${rowVisible ? "hrptl-node--on" : ""} ${isFirst ? "hrptl-node--first" : ""}`}>
-          <div className="hrptl-node-ring">
-            <div className="hrptl-node-dot" />
-          </div>
-          <div className="hrptl-node-year">{m.year}</div>
+      {/* SPINE NODE */}
+      <div className={`hrptl-node ${rowVisible ? "hrptl-node--on" : ""} ${isFirst ? "hrptl-node--first" : ""}`}>
+        <div className="hrptl-node-ring">
+          <div className="hrptl-node-dot" />
         </div>
-
-        {/* CONTENT */}
-        <div className={`hrptl-cols ${isEven ? "hrptl-cols--even" : "hrptl-cols--odd"}`}>
-
-          {/* TEXT */}
-          <div
-            ref={textRef}
-            className={`hrptl-text ${isEven ? "hrptl-text--even" : "hrptl-text--odd"} ${textVisible ? "hrptl-text--on" : ""}`}
-            style={{ transitionDelay: "80ms" }}
-          >
-            <span className="hrptl-label">{m.label}</span>
-            <span className="hrptl-year-mob">{m.year}</span>
-
-            <h3 className="hrptl-title">
-              {m.title.split("\n").map((line, li, arr) => (
-                <span key={li}>{line}{li < arr.length - 1 && <br />}</span>
-              ))}
-            </h3>
-
-            <div
-              className={`hrptl-rule ${textVisible ? "hrptl-rule--on" : ""}`}
-              style={{ transitionDelay: "230ms" }}
-            />
-
-            <p className="hrptl-body">{m.body}</p>
-
-            {isLast && (
-              <div className="hrptl-human-note">
-                <span className="hrptl-human-icon">🏭</span>
-                <span>
-                  Our Hyderabad operations centre — the hub of procurement, quality checking, and same-week dispatch that our 200+ clients rely on.
-                </span>
-              </div>
-            )}
-
-            <div className={`hrptl-meta ${isEven ? "hrptl-meta--even" : "hrptl-meta--odd"}`}>
-              <span className="hrptl-stat">{m.stat}</span>
-              <span className="hrptl-tag">{m.tag}</span>
-            </div>
-          </div>
-
-          {/* IMAGE */}
-          <div
-            ref={imgRef}
-            className={`hrptl-img-wrap ${isEven ? "hrptl-img--even" : "hrptl-img--odd"} ${imgVisible ? "hrptl-img--on" : ""}`}
-            style={{ transitionDelay: isEven ? "180ms" : "120ms" }}
-          >
-            <div className="hrptl-img-box">
-              <img
-                src={m.image}
-                alt={m.alt}
-                className={`hrptl-img ${imgVisible ? "hrptl-img-scale--on" : ""}`}
-                loading="lazy"
-                draggable={false}
-              />
-              <div className="hrptl-img-grad" />
-              <div className="hrptl-img-vignette" />
-              <div className="hrptl-img-chapter">{m.label}</div>
-              {isFirst && <div className="hrptl-img-founder-badge">Founding Year</div>}
-              {isLast && <div className="hrptl-img-ops-badge">Hyderabad HQ</div>}
-            </div>
-          </div>
-
-        </div>
+        <div className="hrptl-node-year">{m.year}</div>
       </div>
 
-      {/* Inject Brand logo block seamlessly inside the chronological story split */}
-      {m.showBrands && <BrandsRow />}
-    </>
+      {/* CONTENT COLUMNS */}
+      <div className={`hrptl-cols ${isEven ? "hrptl-cols--even" : "hrptl-cols--odd"}`}>
+
+        {/* TEXT */}
+        <div
+          ref={textRef}
+          className={`hrptl-text ${isEven ? "hrptl-text--even" : "hrptl-text--odd"} ${textVisible ? "hrptl-text--on" : ""}`}
+          style={{ transitionDelay: "80ms" }}
+        >
+          <span className="hrptl-label">{m.label}</span>
+          <span className="hrptl-year-mob">{m.year}</span>
+
+          <h3 className="hrptl-title">
+            {m.title.split("\n").map((line, li, arr) => (
+              <span key={li}>{line}{li < arr.length - 1 && <br />}</span>
+            ))}
+          </h3>
+
+          <div
+            className={`hrptl-rule ${textVisible ? "hrptl-rule--on" : ""}`}
+            style={{ transitionDelay: "230ms" }}
+          />
+
+          <p className="hrptl-body">{m.body}</p>
+
+          {isLast && (
+            <div className="hrptl-human-note">
+              <span className="hrptl-human-icon">🏭</span>
+              <span>
+                Our Visakhapatnam operations centre — the hub from which we serve India&rsquo;s
+                most demanding industrial clients with precision and reliability, since 1983.
+              </span>
+            </div>
+          )}
+
+          <div className={`hrptl-meta ${isEven ? "hrptl-meta--even" : "hrptl-meta--odd"}`}>
+            <span className="hrptl-stat">{m.stat}</span>
+            <span className="hrptl-tag">{m.tag}</span>
+          </div>
+        </div>
+
+        {/* IMAGE */}
+        <div
+          ref={imgRef}
+          className={`hrptl-img-wrap ${isEven ? "hrptl-img--even" : "hrptl-img--odd"} ${imgVisible ? "hrptl-img--on" : ""}`}
+          style={{ transitionDelay: isEven ? "180ms" : "120ms" }}
+        >
+          <div className="hrptl-img-box">
+            <img
+              src={m.image}
+              alt={m.alt}
+              className={`hrptl-img ${imgVisible ? "hrptl-img-scale--on" : ""}`}
+              loading="lazy"
+              draggable={false}
+            />
+            <div className="hrptl-img-grad" />
+            <div className="hrptl-img-vignette" />
+            <div className="hrptl-img-chapter">{m.label}</div>
+            {isFirst && <div className="hrptl-img-founder-badge">Founding · 1980</div>}
+            {isLast && <div className="hrptl-img-ops-badge">Visakhapatnam HQ</div>}
+          </div>
+        </div>
+
+      </div>
+    </div>
   );
 }
-
-/* ─────────────────────────────────────────────────────────────
-   CLOSING CTA SECTION
-───────────────────────────────────────────────────────────── */
-
 
 /* ─────────────────────────────────────────────────────────────
    MAIN EXPORT
@@ -279,30 +220,179 @@ export default function CompanyJourney() {
   return (
     <>
       <style>{`
-       @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,200;0,300;0,400;1,300&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,200;0,300;0,400;1,300&display=swap');
 
-        .hrptl-section *, .hrptl-section *::before, .hrptl-section *::after {
+        .hrptl-section *, .hrptl-section *::before, .hrptl-section *::after,
+        .hrptl-about-hero *, .hrptl-about-hero *::before, .hrptl-about-hero *::after,
+        .hrptl-intro *, .hrptl-intro *::before, .hrptl-intro *::after {
           box-sizing: border-box; margin: 0; padding: 0;
         }
 
-        /* ── DARK SECTION TRANSFORM ── */
+        /* ════════════════════════════════════════════════════════
+           ABOUT PAGE HERO
+        ════════════════════════════════════════════════════════ */
+        .hrptl-about-hero {
+          background: #0b1219;
+          padding: 128px 0 96px;
+          position: relative;
+          overflow: hidden;
+        }
+        .hrptl-about-hero::before {
+          content: '';
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(74,158,197,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(74,158,197,0.03) 1px, transparent 1px);
+          background-size: 64px 64px;
+          pointer-events: none;
+        }
+        .hrptl-hero-glow {
+          position: absolute; top: 0; left: 50%;
+          transform: translateX(-50%);
+          width: 800px; height: 520px;
+          background: radial-gradient(ellipse at 50% 20%, rgba(74,158,197,0.13) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .hrptl-hero-glow-green {
+          position: absolute; bottom: -60px; right: 10%;
+          width: 500px; height: 400px;
+          background: radial-gradient(ellipse at 70% 80%, rgba(141,198,63,0.07) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .hrptl-hero-inner {
+          max-width: 860px;
+          margin: 0 auto;
+          padding: 0 28px;
+          text-align: center;
+          position: relative; z-index: 2;
+        }
+        .hrptl-hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 300;
+          font-size: 0.66rem;
+          letter-spacing: 0.32em;
+          text-transform: uppercase;
+          color: #4a9ec5;
+          margin-bottom: 24px;
+        }
+        .hrptl-hero-eyebrow-line {
+          width: 32px; height: 1px;
+          background: rgba(74,158,197,0.4);
+          flex-shrink: 0;
+          display: block;
+        }
+        .hrptl-hero-h1 {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: clamp(2.3rem, 5.5vw, 4rem);
+          color: #f1f5f9;
+          line-height: 1.08;
+          letter-spacing: -0.03em;
+          margin-bottom: 24px;
+        }
+        .hrptl-hero-h1 em { color: #8DC63F; font-style: italic; }
+        .hrptl-hero-sub {
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 300;
+          font-size: clamp(0.88rem, 1.5vw, 1.02rem);
+          color: rgba(241,245,249,0.5);
+          max-width: 660px;
+          margin: 0 auto 28px;
+          line-height: 1.8;
+        }
+        .hrptl-hero-location {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.76rem;
+          letter-spacing: 0.08em;
+          color: rgba(241,245,249,0.4);
+          background: rgba(74,158,197,0.06);
+          border: 1px solid rgba(74,158,197,0.15);
+          border-radius: 100px;
+          padding: 7px 18px;
+        }
+        .hrptl-hero-dot { color: rgba(74,158,197,0.4); }
+        .hrptl-hero-accent-bar {
+          width: 56px; height: 2px;
+          background: linear-gradient(90deg, #4a9ec5, #8DC63F);
+          border-radius: 2px;
+          margin: 28px auto 0;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           WHO WE ARE INTRO
+        ════════════════════════════════════════════════════════ */
+        .hrptl-intro {
+          background: #07111a;
+          padding: 80px 0 88px;
+          position: relative;
+          border-top: 1px solid rgba(74,158,197,0.07);
+          border-bottom: 1px solid rgba(74,158,197,0.07);
+        }
+        .hrptl-intro-inner {
+          max-width: 780px;
+          margin: 0 auto;
+          padding: 0 28px;
+          text-align: center;
+        }
+        .hrptl-intro-badge {
+          display: inline-block;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 300;
+          font-size: 0.63rem;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: #8DC63F;
+          background: rgba(141,198,63,0.07);
+          border: 1px solid rgba(141,198,63,0.2);
+          border-radius: 100px;
+          padding: 5px 16px;
+          margin-bottom: 28px;
+        }
+        .hrptl-intro-para {
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 300;
+          font-size: clamp(1rem, 1.8vw, 1.15rem);
+          line-height: 1.9;
+          color: rgba(241,245,249,0.6);
+          margin-bottom: 28px;
+        }
+        .hrptl-intro-divider {
+          width: 48px; height: 1px;
+          background: rgba(74,158,197,0.25);
+          margin: 0 auto 28px;
+        }
+        .hrptl-intro-tagline {
+          font-family: 'Syne', sans-serif;
+          font-weight: 700;
+          font-size: clamp(1.05rem, 2vw, 1.35rem);
+          color: #f1f5f9;
+          letter-spacing: -0.01em;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           TIMELINE SECTION
+        ════════════════════════════════════════════════════════ */
         .hrptl-section {
-          background: #0b1219; 
+          background: #0b1219;
           padding: 96px 0 0;
           position: relative;
           overflow: hidden;
         }
         .hrptl-section::before {
           content: '';
-          position: absolute;
-          inset: 0;
+          position: absolute; inset: 0;
           background-image:
             linear-gradient(rgba(74,158,197,0.025) 1px, transparent 1px),
             linear-gradient(90deg, rgba(74,158,197,0.025) 1px, transparent 1px);
           background-size: 64px 64px;
           pointer-events: none;
         }
-
         .hrptl-inner {
           max-width: 1120px;
           margin: 0 auto;
@@ -310,7 +400,7 @@ export default function CompanyJourney() {
           position: relative;
         }
 
-        /* ── DARK HEADER ── */
+        /* ── SECTION HEADER ── */
         .hrptl-header {
           text-align: center;
           margin-bottom: 88px;
@@ -319,21 +409,20 @@ export default function CompanyJourney() {
           transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1);
         }
         .hrptl-header--on { opacity: 1; transform: none; }
-
         .hrptl-header-eyebrow {
           font-family: 'DM Sans', sans-serif;
           font-weight: 300;
           font-size: 0.68rem;
           letter-spacing: 0.32em;
           text-transform: uppercase;
-          color: #4a9ec5; 
+          color: #4a9ec5;
           margin-bottom: 14px;
         }
         .hrptl-header-h2 {
           font-family: 'Syne', sans-serif;
           font-weight: 800;
           font-size: clamp(2rem, 3.8vw, 3.1rem);
-          color: #f1f5f9; 
+          color: #f1f5f9;
           line-height: 1.07;
           letter-spacing: -0.03em;
           margin-bottom: 18px;
@@ -343,8 +432,8 @@ export default function CompanyJourney() {
           font-family: 'DM Sans', sans-serif;
           font-weight: 300;
           font-size: 0.97rem;
-          color: #94a3b8; 
-          max-width: 500px;
+          color: #94a3b8;
+          max-width: 520px;
           margin: 0 auto;
           line-height: 1.7;
         }
@@ -356,7 +445,10 @@ export default function CompanyJourney() {
         }
 
         /* ── TIMELINE CONTAINER ── */
-        .hrptl-timeline { position: relative; }
+        .hrptl-timeline {
+          position: relative;
+          margin-bottom: 80px;
+        }
 
         /* ── SPINE ── */
         .hrptl-spine {
@@ -365,7 +457,7 @@ export default function CompanyJourney() {
           transform: translateX(-50%);
           top: 0; bottom: 0;
           width: 1px;
-          z-index: 10; /* FIX: Raised above images to ensure alignment tracks stay crisp */
+          z-index: 10;
           pointer-events: none;
         }
         .hrptl-spine-track { position: absolute; inset: 0; background: rgba(74,158,197,0.08); }
@@ -383,12 +475,12 @@ export default function CompanyJourney() {
         }
         .hrptl-row:last-child { margin-bottom: 0; }
 
-        /* ── TIMELINE NODES & YEAR FIXES ── */
+        /* ── SPINE NODES ── */
         .hrptl-node {
           position: absolute;
           left: 50%; top: 42px;
           transform: translateX(-50%);
-          z-index: 20; /* FIX: Bumped layer index higher than image layout wrappers */
+          z-index: 20;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -412,21 +504,19 @@ export default function CompanyJourney() {
         }
         .hrptl-node-dot { width: 6px; height: 6px; border-radius: 50%; background: #4a9ec5; }
         .hrptl-node--first .hrptl-node-dot { background: #8DC63F; width: 8px; height: 8px; }
-        
         .hrptl-node-year {
           font-family: 'Syne', sans-serif;
           font-weight: 800; font-size: 0.68rem;
           letter-spacing: 0.1em;
           color: #4a9ec5;
-          /* FIX: Solid background shield + high backdrop blur prevents image overlaps from making text messy */
-          background: #0b1219; 
+          background: #0b1219;
           backdrop-filter: blur(8px);
           border: 1px solid rgba(74,158,197,0.35);
           padding: 4px 12px; border-radius: 100px;
           white-space: nowrap;
           opacity: 0; transform: scale(0.85) translateY(4px);
           transition: opacity 0.5s ease 0.14s, transform 0.5s cubic-bezier(0.22,1,0.36,1) 0.14s;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         .hrptl-node--on .hrptl-node-year { opacity: 1; transform: scale(1) translateY(0); }
 
@@ -434,7 +524,7 @@ export default function CompanyJourney() {
         .hrptl-cols {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 64px; /* FIX: Expanded gap spacing across screens to give nodes breathing room */
+          gap: 64px;
           position: relative; z-index: 2;
           align-items: center;
         }
@@ -443,13 +533,12 @@ export default function CompanyJourney() {
         .hrptl-cols--odd  > *:first-child { order: 2; }
         .hrptl-cols--odd  > *:last-child  { order: 1; }
 
-        /* ── TEXT CONTENT ── */
+        /* ── TEXT ── */
         .hrptl-text {
           opacity: 0;
           transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.22,1,0.36,1);
           z-index: 5;
         }
-        /* FIX: Adjusted padding bounds safely away from center track line */
         .hrptl-text--even { transform: translateX(-28px); text-align: right; padding-right: 40px; }
         .hrptl-text--odd  { transform: translateX(28px);  text-align: left;  padding-left: 40px;  }
         .hrptl-text--on   { opacity: 1; transform: none !important; }
@@ -472,7 +561,7 @@ export default function CompanyJourney() {
           font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: clamp(1.18rem, 1.8vw, 1.55rem);
           line-height: 1.22; letter-spacing: -0.02em;
-          color: #f8fafc; 
+          color: #f8fafc;
           margin-bottom: 18px;
         }
         .hrptl-rule {
@@ -486,10 +575,9 @@ export default function CompanyJourney() {
         .hrptl-body {
           font-family: 'DM Sans', sans-serif; font-weight: 300;
           font-size: 0.9rem; line-height: 1.8;
-          color: #cbd5e1; 
+          color: #cbd5e1;
           margin-bottom: 20px; font-style: italic;
         }
-
         .hrptl-human-note {
           display: flex;
           align-items: flex-start;
@@ -508,7 +596,6 @@ export default function CompanyJourney() {
           font-size: 0.8rem; line-height: 1.6;
           color: #94a3b8;
         }
-
         .hrptl-meta {
           display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
@@ -528,11 +615,11 @@ export default function CompanyJourney() {
           color: #64748b;
         }
 
-        /* ── IMAGES WITH COLLISION PREVENTIONS ── */
+        /* ── IMAGES ── */
         .hrptl-img-wrap {
           opacity: 0;
           transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1);
-          z-index: 1; /* Keep images below timeline typography layers */
+          z-index: 1;
         }
         .hrptl-img--even { transform: translateX(28px); }
         .hrptl-img--odd  { transform: translateX(-28px); }
@@ -579,261 +666,52 @@ export default function CompanyJourney() {
         .hrptl-img-founder-badge { color: #8DC63F; border: 1px solid rgba(141,198,63,0.25); }
         .hrptl-img-ops-badge     { color: #4a9ec5; border: 1px solid rgba(74,158,197,0.25); }
 
-        /* ══════════════════════════════════════════════════════
-           BRANDS ROW
-        ══════════════════════════════════════════════════════ */
-        .hrptl-brands-wrap {
-          margin: 40px 0 120px;
-          opacity: 0; transform: translateY(24px);
-          transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.22,1,0.36,1);
-        }
-        .hrptl-brands--on { opacity: 1; transform: none; }
-
-        .hrptl-brands-header {
-          text-align: center;
-          margin-bottom: 36px;
-        }
-        .hrptl-brands-eyebrow {
-          display: block;
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
-          color: #8DC63F;
-          margin-bottom: 8px;
-        }
-        .hrptl-brands-sub {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.85rem; color: #94a3b8;
-          max-width: 480px; margin: 0 auto; line-height: 1.6;
-        }
-
-        .hrptl-brands-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-        }
-        .hrptl-brand-card {
-          background: #0f172a; 
-          border: 1px solid rgba(74,158,197,0.12);
-          border-radius: 10px;
-          padding: 24px 16px;
-          text-align: center;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          cursor: default;
-        }
-        .hrptl-brand-card:hover {
-          border-color: rgba(141,198,63,0.4);
-          box-shadow: 0 10px 30px rgba(141,198,63,0.06);
-          transform: translateY(-4px);
-          background: #141e33;
-        }
-        .hrptl-brand-name {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800; font-size: 1.15rem;
-          letter-spacing: -0.01em;
-          color: #64748b; 
-          margin-bottom: 6px;
-          transition: color 0.3s ease;
-        }
-        .hrptl-brand-card:hover .hrptl-brand-name {
-          color: #f8fafc; 
-        }
-        .hrptl-brand-desc {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
-          color: #475569;
-          transition: color 0.3s ease;
-        }
-        .hrptl-brand-card:hover .hrptl-brand-desc {
-          color: #4a9ec5;
-        }
-
-        .hrptl-brands-note {
-          text-align: center; margin-top: 22px;
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.7rem; color: #475569;
-          letter-spacing: 0.04em;
-        }
-
-        /* ══════════════════════════════════════════════════════
-           CLOSING CTA 
-        ══════════════════════════════════════════════════════ */
-        .hrptl-cta-wrap {
-          position: relative;
-          margin-top: 100px;
-          padding: 96px 28px;
-          overflow: hidden;
-          opacity: 0; transform: translateY(28px);
-          transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.22,1,0.36,1);
-        }
-        .hrptl-cta--on { opacity: 1; transform: none; }
-
-        .hrptl-cta-bg {
-          position: absolute; inset: 0;
-          background: #080d12;
-        }
-        .hrptl-cta-bg::before {
-          content: '';
-          position: absolute; inset: 0;
-          background-image:
-            linear-gradient(rgba(74,158,197,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(74,158,197,0.04) 1px, transparent 1px);
-          background-size: 52px 52px;
-        }
-        .hrptl-cta-glow {
-          position: absolute; inset: 0; pointer-events: none;
-          background:
-            radial-gradient(ellipse 65% 55% at 20% 50%, rgba(74,158,197,0.08) 0%, transparent 70%),
-            radial-gradient(ellipse 45% 40% at 80% 30%, rgba(141,198,63,0.05) 0%, transparent 60%);
-        }
-
-        .hrptl-cta-inner {
-          position: relative; z-index: 2;
-          max-width: 800px; margin: 0 auto;
-          text-align: center;
-        }
-
-        .hrptl-cta-eyebrow {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
-          color: rgba(141,198,63,0.8);
-          margin-bottom: 16px;
-        }
-        .hrptl-cta-h2 {
-          font-family: 'Syne', sans-serif; font-weight: 800;
-          font-size: clamp(1.9rem, 3.5vw, 3rem);
-          color: #f1f5f9;
-          line-height: 1.1; letter-spacing: -0.03em;
-          margin-bottom: 20px;
-        }
-        .hrptl-cta-h2 em { color: #8DC63F; font-style: italic; }
-        .hrptl-cta-sub {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.95rem; line-height: 1.75;
-          color: #94a3b8;
-          max-width: 560px; margin: 0 auto 40px;
-        }
-
-        .hrptl-cta-stats {
-          display: flex; justify-content: center;
-          gap: 0; margin-bottom: 44px;
-          border: 1px solid rgba(74,158,197,0.15);
-          border-radius: 10px; overflow: hidden;
-          background: rgba(15,23,42,0.4);
-        }
-        .hrptl-cta-stat {
-          flex: 1; padding: 20px 16px;
-          display: flex; flex-direction: column; align-items: center; gap: 4px;
-          border-right: 1px solid rgba(74,158,197,0.12);
-        }
-        .hrptl-cta-stat:last-child { border-right: none; }
-        .hrptl-cta-stat-n {
-          font-family: 'Syne', sans-serif; font-weight: 800;
-          font-size: 1.6rem; line-height: 1; letter-spacing: -0.03em;
-          color: #4a9ec5;
-        }
-        .hrptl-cta-stat-l {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
-          color: #64748b;
-        }
-
-        .hrptl-cta-btns {
-          display: flex; justify-content: center;
-          gap: 16px; flex-wrap: wrap;
-          margin-bottom: 28px;
-        }
-        .hrptl-cta-btn-primary {
-          display: inline-flex; align-items: center;
-          font-family: 'Syne', sans-serif; font-weight: 700;
-          font-size: 0.9rem; letter-spacing: 0.02em;
-          color: #0b1219;
-          background: #8DC63F;
-          padding: 14px 32px; border-radius: 6px;
-          text-decoration: none;
-          transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-          box-shadow: 0 4px 20px rgba(141,198,63,0.2);
-        }
-        .hrptl-cta-btn-primary:hover {
-          background: #9ed946;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(141,198,63,0.3);
-        }
-        .hrptl-cta-btn-secondary {
-          display: inline-flex; align-items: center;
-          font-family: 'Syne', sans-serif; font-weight: 700;
-          font-size: 0.9rem; letter-spacing: 0.02em;
-          color: #f1f5f9;
-          background: transparent;
-          border: 1.5px solid rgba(74,158,197,0.4);
-          padding: 14px 32px; border-radius: 6px;
-          text-decoration: none;
-          transition: all 0.25s ease;
-        }
-        .hrptl-cta-btn-secondary:hover {
-          background: rgba(74,158,197,0.1);
-          border-color: rgba(74,158,197,0.7);
-          transform: translateY(-2px);
-        }
-
-        .hrptl-cta-trust {
-          font-family: 'DM Sans', sans-serif; font-weight: 300;
-          font-size: 0.72rem; letter-spacing: 0.08em;
-          color: #475569;
-        }
-
-        /* ── RESPONSIVE RESPONSES & COLLISION BREAKPOINTS ── */
+        /* ════════════════════════════════════════════════════════
+           RESPONSIVE
+        ════════════════════════════════════════════════════════ */
         @media (max-width: 1024px) {
-          /* FIX: Tighten column gaps for tablet views to keep layout components compact */
-          .hrptl-cols { gap: 32px; }
+          .hrptl-cols       { gap: 32px; }
           .hrptl-text--even { padding-right: 20px; }
-          .hrptl-text--odd { padding-left: 20px; }
+          .hrptl-text--odd  { padding-left: 20px; }
         }
 
         @media (max-width: 768px) {
+          .hrptl-about-hero { padding: 104px 0 64px; }
+          .hrptl-hero-inner, .hrptl-intro-inner { padding: 0 20px; }
+          .hrptl-hero-h1 { font-size: clamp(1.85rem, 7vw, 2.6rem); }
+          .hrptl-intro   { padding: 60px 0 68px; }
+
           .hrptl-section { padding: 68px 0 0; }
           .hrptl-inner   { padding: 0 20px; }
           .hrptl-header  { margin-bottom: 56px; }
           .hrptl-header-h2 { font-size: clamp(1.7rem, 6vw, 2.2rem); }
 
           .hrptl-spine { left: 18px; transform: none; }
-          .hrptl-node { left: 18px; top: 0; transform: none; flex-direction: row; gap: 10px; z-index: 20; }
+          .hrptl-node  { left: 18px; top: 0; transform: none; flex-direction: row; gap: 10px; z-index: 20; }
           .hrptl-node-year { display: none; }
 
-          .hrptl-row { padding-left: 44px; margin-bottom: 60px; }
-          .hrptl-cols { grid-template-columns: 1fr; gap: 18px; }
+          .hrptl-row      { padding-left: 44px; margin-bottom: 60px; }
+          .hrptl-timeline { margin-bottom: 56px; }
+          .hrptl-cols     { grid-template-columns: 1fr; gap: 18px; }
 
           .hrptl-cols--even > *, .hrptl-cols--odd > * { order: unset !important; }
-          .hrptl-cols--even .hrptl-text, .hrptl-cols--odd .hrptl-text { order: 1 !important; }
+          .hrptl-cols--even .hrptl-text,    .hrptl-cols--odd .hrptl-text    { order: 1 !important; }
           .hrptl-cols--even .hrptl-img-wrap, .hrptl-cols--odd .hrptl-img-wrap { order: 2 !important; }
 
           .hrptl-text--even, .hrptl-text--odd { text-align: left; padding: 0; transform: translateY(18px); }
-          .hrptl-text--on { transform: none !important; }
+          .hrptl-text--on   { transform: none !important; }
           .hrptl-text--even .hrptl-rule { margin-left: 0; }
           .hrptl-meta--even { justify-content: flex-start; }
 
           .hrptl-img--even, .hrptl-img--odd { transform: translateY(20px); }
-          .hrptl-img--on  { transform: none !important; }
-          .hrptl-img-box  { aspect-ratio: 16 / 10; }
-          .hrptl-year-mob { display: block; }
-
-          .hrptl-brands-grid { grid-template-columns: repeat(2, 1fr); }
-          .hrptl-brands-wrap { margin-bottom: 60px; }
-
-          .hrptl-cta-wrap  { padding: 64px 20px; margin-top: 60px; }
-          .hrptl-cta-stats { flex-wrap: wrap; border-radius: 8px; }
-          .hrptl-cta-stat  { flex: 1 1 45%; border-bottom: 1px solid rgba(74,158,197,0.12); }
-          .hrptl-cta-stat:nth-child(3), .hrptl-cta-stat:nth-child(4) { border-bottom: none; }
-          .hrptl-cta-stat:nth-child(even) { border-right: none; }
-          .hrptl-cta-stat-n { font-size: 1.3rem; }
-
-          .hrptl-cta-btns { flex-direction: column; align-items: center; }
-          .hrptl-cta-btn-primary, .hrptl-cta-btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
+          .hrptl-img--on    { transform: none !important; }
+          .hrptl-img-box    { aspect-ratio: 16 / 10; }
+          .hrptl-year-mob   { display: block; }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .hrptl-header, .hrptl-text, .hrptl-img-wrap,
-          .hrptl-node-ring, .hrptl-node-year, .hrptl-rule,
-          .hrptl-img, .hrptl-brands-wrap, .hrptl-cta-wrap {
+          .hrptl-node-ring, .hrptl-node-year, .hrptl-rule, .hrptl-img {
             transition: none !important;
             opacity: 1 !important;
             transform: none !important;
@@ -843,22 +721,78 @@ export default function CompanyJourney() {
         }
       `}</style>
 
+      {/* ════════════════════════════════════════════════════════
+          ABOUT PAGE HERO
+      ════════════════════════════════════════════════════════ */}
+      <section className="hrptl-about-hero" aria-label="About Hydraulics & Rubber Products Industrial Products">
+        <div aria-hidden className="hrptl-hero-glow" />
+        <div aria-hidden className="hrptl-hero-glow-green" />
+        <div className="hrptl-hero-inner">
+          <p className="hrptl-hero-eyebrow">
+            <span className="hrptl-hero-eyebrow-line" />
+            About Hydraulics & Rubber Products Industrial Products
+            <span className="hrptl-hero-eyebrow-line" />
+          </p>
+          <h1 className="hrptl-hero-h1">
+            A Legacy Built on Precision.<br />
+            <em>A Future Built on Trust.</em>
+          </h1>
+          <p className="hrptl-hero-sub">
+            Stockists &amp; Distributors of High-Pressure Hydraulic Hoses, Valves, SS Bellows,
+            Advanced Pneumatic Control Components &amp; Specialised Industrial Instruments.
+          </p>
+          <div className="hrptl-hero-location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Visakhapatnam, Andhra Pradesh</span>
+            <span className="hrptl-hero-dot">·</span>
+            <span>Est. 1983</span>
+          </div>
+          <div className="hrptl-hero-accent-bar" aria-hidden="true" />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          WHO WE ARE
+      ════════════════════════════════════════════════════════ */}
+      <section className="hrptl-intro" aria-label="Who We Are">
+        <div className="hrptl-intro-inner">
+          <p className="hrptl-intro-badge">Who We Are</p>
+          <p className="hrptl-intro-para">
+            Hydraulics and Rubber Products (Hydraulics & Rubber Products) is a Visakhapatnam-based industrial supply company
+            with over four decades of hands-on expertise in fluid mechanics, rubber engineering, and
+            precision instrumentation. What began as a small hardware trading firm has grown into a
+            Pan-India recognised supply network — trusted by defense establishments, public sector
+            units, and large private corporations alike.
+          </p>
+          <div className="hrptl-intro-divider" aria-hidden="true" />
+          <p className="hrptl-intro-tagline">
+            We don&rsquo;t just supply components. We deliver engineered reliability.
+          </p>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          COMPANY TIMELINE
+      ════════════════════════════════════════════════════════ */}
       <section className="hrptl-section" aria-label="Company Journey Timeline">
         <div className="hrptl-inner">
 
-          {/* HEADER */}
           <div ref={headerRef} className={`hrptl-header ${headerOn ? "hrptl-header--on" : ""}`}>
-            <p className="hrptl-header-eyebrow">Est. 1983 · Industrial Heritage</p>
+            <p className="hrptl-header-eyebrow">Our Story · Est. 1983</p>
             <h2 className="hrptl-header-h2">
-              Engineering Growth<br /><em>Since 1983</em>
+              Four Decades of<br /><em>Engineered Reliability</em>
             </h2>
             <p className="hrptl-header-sub">
-              Fifteen years of building trust, expanding reach, and deepening our engineering expertise — one partnership at a time.
+              From a hardware stockist on the Coromandel Coast to a Pan-India defence-approved
+              industrial supply network — this is the Hydraulics & Rubber Products story.
             </p>
             <div className="hrptl-header-accent" />
           </div>
 
-          {/* TIMELINE + INTERLEAVED BRANDS */}
           <div className="hrptl-timeline" ref={timelineRef}>
             <Spine containerRef={timelineRef} />
             {MILESTONES.map((m, i) => (
@@ -867,9 +801,6 @@ export default function CompanyJourney() {
           </div>
 
         </div>
-
-        {/* CLOSING CTA */}
-
       </section>
     </>
   );

@@ -179,13 +179,15 @@ export default function PageIntro() {
                             filter: 'drop-shadow(0 0 28px rgba(43,126,161,0.5))',
                         }}
                     >
+                        <div className="flex items-center justify-center w-36 h-36 rounded-lg bg-white overflow-hidden">
                         <Image
                             src="/images/hrp_logo.png"
                             alt="HRP Logo"
-                            width={120}
-                            height={120}
+                            width={500}
+                            height={500}
                             priority
                         />
+                        </div>
                     </motion.div>
 
                     {/* Wordmark below badge */}

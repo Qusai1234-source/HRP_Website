@@ -21,7 +21,7 @@ const fadeUp = (delay = 0) => ({
     transition: { delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
 });
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919849304010";
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919014538495";
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
 
 const localBusinessJsonLd = {
@@ -29,7 +29,7 @@ const localBusinessJsonLd = {
     "@type": "LocalBusiness",
     name: "HRP Industrial Products",
     url: BASE_URL,
-    telephone: "+91-98493-04010",
+    telephone: "+91-9014538495",
     email: "info@hrpvizag.com",
     address: {
         "@type": "PostalAddress",
@@ -42,8 +42,8 @@ const localBusinessJsonLd = {
     openingHoursSpecification: {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        opens: "09:00",
-        closes: "18:00",
+        opens: "10:00",
+        closes: "19:00",
     },
     description: "HRP Industrial Products — authorized distributor of SS Bellows, Hydraulic Hoses, Pneumatic Hoses, Pressure Gauges, Valves and Fittings in Visakhapatnam, India.",
 };
@@ -81,10 +81,10 @@ function ContactPageInner() {
         category: "",
         message: "",
     });
-    const [status, setStatus] = useState("idle"); // idle | loading | success | error
+    const [status, setStatus] = useState("idle"); // idle | loading | success | success_no_email | error
     const [errorMsg, setErrorMsg] = useState("");
-    const [categories, setCategories] = useState([]);
-    const [catsLoading, setCatsLoading] = useState(true);
+    // Start with fallback so the dropdown is never empty on first paint
+    const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
 
     // Pre-fill message if ?product= is in the URL
     useEffect(() => {
@@ -99,23 +99,18 @@ function ContactPageInner() {
         }
     }, [searchParams]);
 
-    // Fetch categories dynamically
+    // Try to upgrade with live categories from Supabase; fall back silently
     useEffect(() => {
-        import("@/app/lib/supabase").then(({ supabase }) => {
-            supabase
-                .from("categories")
-                .select("id,name,slug")
-                .order("sort_order", { ascending: true })
-                .then(({ data, error }) => {
-                    if (error || !data?.length) setCategories(FALLBACK_CATEGORIES);
-                    else setCategories(data);
-                    setCatsLoading(false);
-                })
-                .catch(() => {
-                    setCategories(FALLBACK_CATEGORIES);
-                    setCatsLoading(false);
-                });
-        });
+        let cancelled = false;
+        fetch("/api/categories")
+            .then((r) => r.ok ? r.json() : Promise.reject())
+            .then((data) => {
+                if (!cancelled && Array.isArray(data) && data.length > 0) {
+                    setCategories(data);
+                }
+            })
+            .catch(() => { /* keep fallback already in state */ });
+        return () => { cancelled = true; };
     }, []);
 
     function handleChange(e) {
@@ -141,14 +136,35 @@ function ContactPageInner() {
                 throw new Error(data.error || "Failed to send inquiry.");
             }
 
-            // ── Success: show state & open WhatsApp ─────────────────────────
-            setStatus("success");
+            // ── Success: capture values, clear form, open WhatsApp ─────────
+            const sent = await res.json().catch(() => ({}));
+
+            // Capture before clearing state
+            const { name, company, phone, email: userEmail, category, message } = form;
+            const categoryLabel = categories.find((c) => c.slug === category)?.name
+                || (category ? category.replace(/-/g, " ") : "");
+
+            setStatus(sent.emailSent ? "success" : "success_no_email");
             setForm({ name: "", company: "", phone: "", email: "", category: "", message: "" });
 
-            const waText = encodeURIComponent(
-                `Hi HRP, I just submitted an inquiry on your website.\nName: ${form.name}${form.company ? `\nCompany: ${form.company}` : ""}\nPhone: ${form.phone}\nMessage: ${form.message}`
-            );
-            window.open(`https://wa.me/${WHATSAPP}?text=${waText}`, "_blank", "noopener,noreferrer");
+            // Build structured WhatsApp message
+            const waLines = [
+                `*New Inquiry — HRP Industrial Products*`,
+                ``,
+                `*Name:* ${name}`,
+                company  ? `*Company:* ${company}`       : null,
+                `*Phone:* ${phone}`,
+                userEmail ? `*Email:* ${userEmail}`       : null,
+                categoryLabel ? `*Category:* ${categoryLabel}` : null,
+                ``,
+                `*Message:*`,
+                message,
+                ``,
+                `─────────────────────`,
+                `Submitted via hrpindustrial.in`,
+            ].filter((l) => l !== null).join("\n");
+
+            window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waLines)}`, "_blank", "noopener,noreferrer");
 
         } catch (err) {
             setStatus("error");
@@ -301,9 +317,9 @@ function ContactPageInner() {
                                 {
                                     icon: <Phone className="w-4 h-4" />,
                                     label: "Phone",
-                                    value: "+91 98493 04010",
-                                    sub: "Mon–Sat, 9am–6pm",
-                                    href: "tel:+919849304010",
+                                    value: "+91 90145 38495",
+                                    sub: "Mon–Sat, 10am–7pm",
+                                    href: "tel:+919014538495",
                                 },
                                 {
                                     icon: <Mail className="w-4 h-4" />,
@@ -323,7 +339,7 @@ function ContactPageInner() {
                                     icon: <Clock className="w-4 h-4" />,
                                     label: "Working Hours",
                                     value: "Monday – Saturday",
-                                    sub: "9:00 AM – 6:00 PM IST",
+                                    sub: "10:00 AM – 7:00 PM IST",
                                     href: null,
                                 },
                             ].map((item, i) => (
@@ -411,7 +427,7 @@ function ContactPageInner() {
                                     </h2>
 
                                     {/* Success state */}
-                                    {status === "success" && (
+                                    {(status === "success" || status === "success_no_email") && (
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.97 }}
                                             animate={{ opacity: 1, scale: 1 }}
@@ -424,9 +440,23 @@ function ContactPageInner() {
                                                 <h3 className="font-heading font-bold text-white text-lg mb-2">
                                                     Inquiry Sent!
                                                 </h3>
-                                                <p className="font-body text-white/50 text-sm max-w-xs">
-                                                    We&apos;ve received your message and WhatsApp has opened — we&apos;ll get back to you shortly.
-                                                </p>
+                                                <div className="flex flex-col gap-1.5 items-center">
+                                                    <span className="inline-flex items-center gap-1.5 font-body text-xs text-brand-accent/80">
+                                                        <CheckCircle className="w-3 h-3" /> WhatsApp opened with your details
+                                                    </span>
+                                                    {status === "success" ? (
+                                                        <span className="inline-flex items-center gap-1.5 font-body text-xs text-brand-accent/80">
+                                                            <CheckCircle className="w-3 h-3" /> Notification email sent to HRP
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 font-body text-xs text-white/30">
+                                                            <AlertCircle className="w-3 h-3" /> Email not configured — WhatsApp only
+                                                        </span>
+                                                    )}
+                                                    <span className="inline-flex items-center gap-1.5 font-body text-xs text-brand-accent/80">
+                                                        <CheckCircle className="w-3 h-3" /> Inquiry saved to admin panel
+                                                    </span>
+                                                </div>
                                             </div>
                                             <button
                                                 onClick={() => setStatus("idle")}
@@ -438,7 +468,7 @@ function ContactPageInner() {
                                     )}
 
                                     {/* Form */}
-                                    {status !== "success" && (
+                                    {status !== "success" && status !== "success_no_email" && (
                                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field
@@ -484,19 +514,26 @@ function ContactPageInner() {
                                                     name="category"
                                                     value={form.category}
                                                     onChange={handleChange}
-                                                    className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-4 py-3 text-white/80 text-sm font-body focus:outline-none focus:border-brand-primary/50 focus:bg-white/[0.07] transition-all appearance-none"
-                                                    style={{ colorScheme: "dark" }}
+                                                    className="w-full border border-white/10 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:border-brand-primary/50 transition-all"
+                                                    style={{
+                                                        backgroundColor: "#0f1a24",
+                                                        color: "rgba(241,245,249,0.75)",
+                                                        colorScheme: "dark",
+                                                    }}
                                                     suppressHydrationWarning
                                                 >
-                                                    {catsLoading
-                                                        ? <option disabled>Loading categories…</option>
-                                                        : <>
-                                                            <option value="">Select a category (optional)</option>
-                                                            {categories.map(cat => (
-                                                                <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                                                            ))}
-                                                          </>
-                                                    }
+                                                    <option value="" style={{ backgroundColor: "#0f1a24", color: "rgba(241,245,249,0.45)" }}>
+                                                        Select a category (optional)
+                                                    </option>
+                                                    {categories.map((cat) => (
+                                                        <option
+                                                            key={cat.slug}
+                                                            value={cat.slug}
+                                                            style={{ backgroundColor: "#0f1a24", color: "#f1f5f9" }}
+                                                        >
+                                                            {cat.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                             </div>
 

@@ -122,7 +122,7 @@ export default function Navbar() {
 
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-white overflow-hidden">
+                            <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-white overflow-hidden">
                                 <img
                                     src="/images/hrp_logo.png"
                                     alt="HRP Logo"

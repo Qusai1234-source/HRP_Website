@@ -48,6 +48,15 @@ const NAV = [
         ),
         badge: "inquiries", // special: shows count of new inquiries
     },
+    {
+        href: "/admin/dashboard/notice",
+        label: "Site Notice",
+        icon: (
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+        ),
+    },
 ];
 
 export default function AdminLayout({ children }) {
@@ -114,10 +123,12 @@ export default function AdminLayout({ children }) {
             }}>
                 {/* Logo */}
                 <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(43,126,161,0.18)", border: "1px solid rgba(43,126,161,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="16" height="16" fill="none" stroke="#2B7EA1" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11" />
-                        </svg>
+                    <div style={{ width: 48, height: 48, borderRadius: 9, background: "rgb(255, 255, 255)", border: "1px solid rgba(43,126,161,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+                        <img
+                            src="/images/hrp_logo.png"
+                            alt="HRP Logo"
+                            style={{ width: 48, height: 48, objectFit: "contain" }}
+                        />
                     </div>
                     {sidebarOpen && (
                         <div style={{ overflow: "hidden" }}>

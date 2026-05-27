@@ -14,7 +14,7 @@ export function getImageUrl(path) {
 export function getWhatsAppUrl(
     message = "Hello! I found your website and would like to make an enquiry."
 ) {
-    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919849304010";
+    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919014538495";
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 

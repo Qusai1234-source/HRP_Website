@@ -242,10 +242,23 @@ export default function InquiriesPage() {
 
     useEffect(() => { fetchInquiries(); }, [fetchInquiries]);
 
-    // Status update
+    // Returns the Authorization header with the current session token
+    async function getAuthHeader() {
+        const { data: { session } } = await supabase.auth.getSession();
+        return session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {};
+    }
+
+    // Status update — via server route (service role bypasses RLS)
     async function handleStatusChange(id, newStatus) {
-        const { error } = await supabase.from("inquiries").update({ status: newStatus }).eq("id", id);
-        if (error) { showToast("Failed to update status", "error"); return; }
+        const authHeader = await getAuthHeader();
+        const res = await fetch(`/api/inquiries/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", ...authHeader },
+            body: JSON.stringify({ status: newStatus }),
+        });
+        if (!res.ok) { showToast("Failed to update status", "error"); return; }
         setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: newStatus } : i));
         showToast(`Marked as ${newStatus}`);
     }
@@ -264,10 +277,15 @@ export default function InquiriesPage() {
         }
     }
 
+    // Delete — via server route (service role bypasses RLS)
     async function executeDelete(id) {
         setDeleteConfirm(null);
-        const { error } = await supabase.from("inquiries").delete().eq("id", id);
-        if (error) { showToast("Failed to delete inquiry", "error"); return; }
+        const authHeader = await getAuthHeader();
+        const res = await fetch(`/api/inquiries/${id}`, {
+            method: "DELETE",
+            headers: authHeader,
+        });
+        if (!res.ok) { showToast("Failed to delete inquiry", "error"); return; }
         setInquiries(prev => prev.filter(i => i.id !== id));
         showToast("Inquiry deleted");
     }

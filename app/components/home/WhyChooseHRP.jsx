@@ -62,7 +62,7 @@ export default function WhyChooseHRP() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
                     >
-                        <p className="font-body text-brand-primary font-semibold text-sm tracking-widest uppercase mb-4">
+                        <p className="font-body text-brand-primary font-semibold text-md tracking-widest uppercase mb-4">
                             Why Choose Us
                         </p>
 
@@ -76,7 +76,7 @@ export default function WhyChooseHRP() {
                         </h2>
 
                         <p className="font-body text-brand-secondary/75 text-lg leading-relaxed mb-10">
-                            HRP has been supplying precision industrial components to businesses across India
+                            Hydraulics & Rubber Products has been supplying precision industrial components to businesses across India
                             for over a decade. We combine deep product knowledge with reliable service to keep
                             your operations running without interruption.
                         </p>

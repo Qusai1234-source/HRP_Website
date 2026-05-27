@@ -7,9 +7,10 @@ import { getWhatsAppUrl } from "@/app/lib/utils";
 import { supabase } from "@/app/lib/supabase";
 
 const CONTACT = {
-    phone: "+91 98493 04010",
-    email: "info@hrpindustrial.in",
-    address: "Hyderabad, Telangana, India",
+    phone: "+91 90145 38495",
+    phoneHref: "tel:+919014538495",
+    email: "info@hrpvizag.com",
+    address: "Shop No G5 & G6, 28-13-20, Brindavan Rd, opp. Vishnu Residency, Suryabagh, Jagadamba Junction, Visakhapatnam — 530020",
 };
 
 const FALLBACK_CATEGORIES = [
@@ -139,7 +140,7 @@ export default function Footer() {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3">
                                 <Phone className="w-4 h-4 text-brand-primary mt-0.5 shrink-0" />
-                                <a href={`tel:${CONTACT.phone}`} className="font-body text-white/50 hover:text-brand-accent text-sm transition-colors duration-200">
+                                <a href={CONTACT.phoneHref} className="font-body text-white/50 hover:text-brand-accent text-sm transition-colors duration-200">
                                     {CONTACT.phone}
                                 </a>
                             </li>

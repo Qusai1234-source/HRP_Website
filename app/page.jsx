@@ -7,6 +7,7 @@ import WhyChooseHRP from '@/app/components/home/WhyChooseHRP'
 import BrandsMarquee from '@/app/components/home/BrandsMarquee'
 import FeaturedProducts from '@/app/components/home/FeaturedProducts'
 import CTABanner from '@/app/components/home/CTABanner'
+import NoticePopup from '@/app/components/NoticePopup'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
 
@@ -34,15 +35,18 @@ const organizationJsonLd = {
   logo: `${BASE_URL}/images/logo.png`,
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+91-98493-04010",
+    telephone: "+91-9014538495",
+    email: "info@hrpvizag.com",
     contactType: "sales",
     areaServed: "IN",
     availableLanguage: ["English", "Hindi", "Telugu"],
   },
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Hyderabad",
-    addressRegion: "Telangana",
+    streetAddress: "Shop No G5 & G6, 28-13-20, Brindavan Rd, opp. Vishnu Residency, Suryabagh, Jagadamba Junction",
+    addressLocality: "Visakhapatnam",
+    addressRegion: "Andhra Pradesh",
+    postalCode: "530020",
     addressCountry: "IN",
   },
   sameAs: [],
@@ -100,6 +104,7 @@ export default async function HomePage() {
       <BrandsMarquee />
       <FeaturedProducts products={featuredProducts} />
       <CTABanner />
+      <NoticePopup />
     </div>
   )
 }

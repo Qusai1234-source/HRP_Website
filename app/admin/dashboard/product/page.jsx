@@ -218,15 +218,49 @@ export default function AdminProductsPage() {
   }
 
   /* ─── image upload ─── */
+  const MAX_IMG_BYTES = 5 * 1024 * 1024; // 5 MB
+
   async function uploadImg(file, isGallery = false) {
-    const ext = file.name.split(".").pop();
+    setSaveErr("");
+
+    if (!file.type?.startsWith("image/")) {
+      setSaveErr(`Upload failed: "${file.name}" is not an image file.`);
+      return null;
+    }
+    if (file.size > MAX_IMG_BYTES) {
+      setSaveErr(`Upload failed: "${file.name}" is ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum is 5 MB.`);
+      return null;
+    }
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     if (isGallery) setGalleryUploading(true); else setImgUploading(true);
-    const { data, error } = await supabase.storage.from("product-images").upload(path, file);
-    if (error) { setSaveErr("Upload failed: " + error.message); if (isGallery) setGalleryUploading(false); else setImgUploading(false); return null; }
-    const { data: u } = supabase.storage.from("product-images").getPublicUrl(data.path);
-    if (isGallery) setGalleryUploading(false); else setImgUploading(false);
-    return u.publicUrl;
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+
+      if (error) {
+        console.error("[uploadImg] Supabase storage error:", error);
+        const hint = /bucket/i.test(error.message)
+          ? ' — bucket "product-images" may not exist. Create it in Supabase → Storage and make it public.'
+          : /policy|permission|rls/i.test(error.message)
+          ? " — RLS policy is blocking upload. See supabase-storage-setup.sql for the required policy."
+          : "";
+        setSaveErr("Upload failed: " + error.message + hint);
+        return null;
+      }
+
+      const { data: u } = supabase.storage.from("product-images").getPublicUrl(data.path);
+      return u.publicUrl;
+    } catch (err) {
+      console.error("[uploadImg] threw:", err);
+      setSaveErr("Upload failed: " + (err?.message || "network error"));
+      return null;
+    } finally {
+      if (isGallery) setGalleryUploading(false); else setImgUploading(false);
+    }
   }
 
   async function handleImgSelect(e) {
@@ -840,14 +874,17 @@ export default function AdminProductsPage() {
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#2B7EA1")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)")}
                 >
-                  {form.image_url ? (
+                  {imgUploading ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                      <div style={{ width: 22, height: 22, borderRadius: "50%", border: "2.5px solid #2B7EA1", borderTopColor: "transparent", animation: "spin 0.7s linear infinite" }} />
+                      <span>Uploading…</span>
+                    </div>
+                  ) : form.image_url ? (
                     <div style={{ position: "relative", display: "inline-block" }}>
                       <img src={form.image_url} alt="" style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10 }} />
                       <button onClick={(e) => { e.stopPropagation(); setF("image_url", ""); }}
                         style={{ position: "absolute", top: -8, right: -8, width: 22, height: 22, borderRadius: "50%", background: "#DC2626", border: "none", color: "#fff", fontSize: 12, cursor: "pointer" }}>×</button>
                     </div>
-                  ) : imgUploading ? (
-                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Uploading…</div>
                   ) : (
                     <div>
                       <svg width="26" height="26" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" viewBox="0 0 24 24" style={{ margin: "0 auto 8px" }}>

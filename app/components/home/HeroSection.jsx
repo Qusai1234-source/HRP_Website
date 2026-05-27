@@ -34,7 +34,7 @@ const fadeUp = (delay = 0) => ({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function HeroSection() {
-    const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '919849304010'
+    const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '919014538495'
     const waUrl = `https://wa.me/${phone}?text=Hi%2C%20I%27d%20like%20to%20enquire%20about%20your%20products.`
 
     return (
@@ -94,26 +94,6 @@ export default function HeroSection() {
 
                         {/* Text block — left-anchored, max width constrains it away from products */}
                         <div className="w-full max-w-[600px] pt-10">
-
-                            {/* Year / credential badge — replaces generic eyebrow pill */}
-                            <motion.div
-                                {...fadeUp(0.1)}
-                                className="flex items-center gap-4 mb-10"
-                            >
-                                <div
-                                    className="font-heading font-bold text-brand-accent"
-                                    style={{ fontSize: '0.7rem', letterSpacing: '0.25em' }}
-                                >
-                                    EST. 1983
-                                </div>
-                                <div className="flex-1 h-px max-w-[48px]" style={{ background: 'rgba(141,198,63,0.5)' }} />
-                                <div
-                                    className="font-body text-white/40 uppercase"
-                                    style={{ fontSize: '0.65rem', letterSpacing: '0.22em' }}
-                                >
-                                    Industrial Products
-                                </div>
-                            </motion.div>
 
                             {/* Headline — stacked lines, no word wrap mid-word */}
                             <motion.h1

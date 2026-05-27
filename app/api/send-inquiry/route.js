@@ -1,14 +1,14 @@
 // app/api/send-inquiry/route.js
 // POST /api/send-inquiry
 // 1. Saves the inquiry to Supabase
-// 2. Sends a notification email to the business Gmail via SMTP
-// Requires env vars: GMAIL_USER, GMAIL_APP_PASSWORD
+// 2. Sends a notification email via Resend
+// Requires env var: RESEND_API_KEY
+// Optional env var: INQUIRY_RECIPIENT (defaults to info@hrpvizag.com)
 
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Server-side Supabase client (uses service role if available, anon otherwise)
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -88,10 +88,10 @@ function buildEmailHtml({ name, company, phone, email, category, message }) {
           </td>
         </tr>
 
-        <!-- CTA -->
+        <!-- Reply CTAs -->
         <tr>
           <td style="padding:0 36px 32px;">
-            <a href="https://wa.me/919849304010?text=${encodeURIComponent(`Hi, responding to inquiry from ${name}${phone ? ` (${phone})` : ""}.`)}"
+            <a href="https://wa.me/919014538495?text=${encodeURIComponent(`Hi, responding to inquiry from ${name}${phone ? ` (${phone})` : ""}.`)}"
                style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;margin-right:12px;">
               Reply on WhatsApp
             </a>
@@ -123,7 +123,10 @@ export async function POST(request) {
 
         // Basic validation
         if (!name?.trim() || !phone?.trim() || !message?.trim()) {
-            return NextResponse.json({ error: "Name, phone, and message are required." }, { status: 400 });
+            return NextResponse.json(
+                { error: "Name, phone, and message are required." },
+                { status: 400 }
+            );
         }
 
         // ── 1. Save to Supabase ────────────────────────────────────────────────
@@ -141,33 +144,37 @@ export async function POST(request) {
             // Don't block — still attempt to send email
         }
 
-        // ── 2. Send notification email ─────────────────────────────────────────
-        const gmailUser = process.env.GMAIL_USER;
-        const gmailPass = process.env.GMAIL_APP_PASSWORD;
-
-        if (!gmailUser || !gmailPass) {
-            console.warn("[send-inquiry] GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping email.");
+        // ── 2. Send email via Resend ───────────────────────────────────────────
+        if (!process.env.RESEND_API_KEY) {
+            console.warn("[send-inquiry] RESEND_API_KEY not set — skipping email.");
             return NextResponse.json({ ok: true, emailSent: false });
         }
 
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: { user: gmailUser, pass: gmailPass },
-        });
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
-        await transporter.sendMail({
-            from: `"HRP Website" <${gmailUser}>`,
-            to: process.env.INQUIRY_RECIPIENT || gmailUser,
+        const recipient = process.env.INQUIRY_RECIPIENT || "info@hrpvizag.com";
+        const subject   = `New Inquiry from ${name.trim()}${company ? ` — ${company.trim()}` : ""}`;
+
+        const { error: emailError } = await resend.emails.send({
+            from: "HRP Website <onboarding@resend.dev>",
+            to: [recipient],
             replyTo: email || undefined,
-            subject: `New Inquiry from ${name.trim()}${company ? ` — ${company.trim()}` : ""}`,
+            subject,
             html: buildEmailHtml({ name, company, phone, email, category, message }),
         });
 
+        if (emailError) {
+            console.error("[send-inquiry] Resend error:", emailError);
+            return NextResponse.json({ ok: true, emailSent: false });
+        }
+
         return NextResponse.json({ ok: true, emailSent: true });
+
     } catch (err) {
         console.error("[send-inquiry]", err);
-        return NextResponse.json({ error: err?.message || "Failed to send inquiry." }, { status: 500 });
+        return NextResponse.json(
+            { error: err?.message || "Failed to send inquiry." },
+            { status: 500 }
+        );
     }
 }
