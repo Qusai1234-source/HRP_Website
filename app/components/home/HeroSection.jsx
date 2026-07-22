@@ -97,6 +97,10 @@ export default function HeroSection() {
 
                             {/* Headline — stacked lines, no word wrap mid-word */}
                             <motion.h1
+                                // Words are split into per-word inline-blocks for the stagger
+                                // animation, which makes the rendered text run together for
+                                // assistive tech — this label restores the correct reading.
+                                aria-label="Industrial Solutions Built to Last"
                                 className="font-heading font-bold text-white leading-[1.0] mb-8 tracking-tight"
                                 style={{ fontSize: 'clamp(3rem, 6.5vw, 5.6rem)' }}
                                 variants={containerVariants}
@@ -104,10 +108,14 @@ export default function HeroSection() {
                                 animate="visible"
                             >
                                 {/* Line 1 — white */}
+                                {/* A trailing space inside each inline-block keeps textContent
+                                    readable ("Industrial Solutions") for SEO / screen readers.
+                                    CSS strips trailing whitespace at the end of an inline-block,
+                                    so the rendered layout is unchanged. */}
                                 <span className="block overflow-hidden">
                                     {['Industrial', 'Solutions'].map((w) => (
                                         <motion.span key={w} variants={wordVariants} className="inline-block mr-[0.18em]">
-                                            {w}
+                                            {w}{' '}
                                         </motion.span>
                                     ))}
                                 </span>
@@ -116,7 +124,7 @@ export default function HeroSection() {
                                 <span className="block overflow-hidden">
                                     {['Built', 'to', 'Last'].map((w) => (
                                         <motion.span key={w} variants={wordVariants} className="inline-block mr-[0.18em] text-brand-accent italic">
-                                            {w}
+                                            {w}{' '}
                                         </motion.span>
                                     ))}
                                 </span>

@@ -42,7 +42,10 @@ function ProductsCatalogInner({ lockedCategory = null }) {
     const [loadingMore, setLoadingMore] = useState(false);
 
     // ── Sync search input to URL after debounce ─────────────────────────────
-    useEffect(() => { setSearchInput(search); }, [search]);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSearchInput(search);
+    }, [search]);
 
     const updateParams = useCallback((mutator) => {
         const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -157,6 +160,7 @@ function ProductsCatalogInner({ lockedCategory = null }) {
     useEffect(() => {
         // Wait for subcategories to load before querying if a sub is requested
         if (selectedSubSlug && selectedCategory && subcategories.length === 0) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPage(0);
         loadPage(0, true);
         // eslint-disable-next-line react-hooks/exhaustive-deps

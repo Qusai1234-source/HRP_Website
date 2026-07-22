@@ -9,8 +9,12 @@ const LOGO_SETTLE_MS = 1100   // how long logo is visible before scan starts
 const SCAN_DURATION_S = 1.4    // how long the scan sweep takes
 const UNMOUNT_DELAY = 160    // ms after sweep before component unmounts
 
+const shouldAnimateIntro = () =>
+    typeof window === 'undefined' ||
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 export default function PageIntro() {
-    const [visible, setVisible] = useState(true)
+    const [visible, setVisible] = useState(shouldAnimateIntro)
 
     // 0 → 100: percentage the scan line has travelled top → bottom
     const scanY = useMotionValue(0)
@@ -29,26 +33,33 @@ export default function PageIntro() {
     const glowOpacity = useTransform(scanY, [0, 4, 92, 100], [0, 1, 1, 0])
 
     useEffect(() => {
+        let mounted = true
+        let controls
         // Skip animation for users who prefer reduced motion
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            setVisible(false)
-            return
-        }
+        if (!shouldAnimateIntro()) return
 
         const run = async () => {
             await new Promise((r) => setTimeout(r, LOGO_SETTLE_MS))
 
-            await animate(scanY, 100, {
+            if (!mounted) return
+
+            controls = animate(scanY, 100, {
                 duration: SCAN_DURATION_S,
                 ease: [0.5, 0, 0.4, 1], // slow start → fast mid → slow finish
             })
+            await controls
 
             await new Promise((r) => setTimeout(r, UNMOUNT_DELAY))
-            setVisible(false)
+            if (mounted) setVisible(false)
         }
 
         run()
-    }, [])
+
+        return () => {
+            mounted = false
+            controls?.stop()
+        }
+    }, [scanY])
 
     if (!visible) return null
 

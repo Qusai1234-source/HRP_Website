@@ -95,8 +95,8 @@ function StatCard({ label, value, color, icon, loading }) {
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
 function DetailModal({ inquiry, onClose, onStatusChange }) {
-    if (!inquiry) return null;
     const [updating, setUpdating] = useState(false);
+    if (!inquiry) return null;
 
     async function setStatus(newStatus) {
         setUpdating(true);
@@ -240,7 +240,10 @@ export default function InquiriesPage() {
         setLoading(false);
     }, []);
 
-    useEffect(() => { fetchInquiries(); }, [fetchInquiries]);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchInquiries();
+    }, [fetchInquiries]);
 
     // Returns the Authorization header with the current session token
     async function getAuthHeader() {

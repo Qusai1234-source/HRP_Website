@@ -1,6 +1,6 @@
 import { supabase } from "@/app/lib/supabase";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpvizag.com";
 
 export default async function sitemap() {
     const now = new Date();
@@ -36,15 +36,17 @@ export default async function sitemap() {
     // ── Product pages ──────────────────────────────────────────────────────────
     let productRoutes = [];
     try {
+        // NOTE: products has no `updated_at` column — selecting it made PostgREST
+        // error out and silently drop every product page from the sitemap.
         const { data: products } = await supabase
             .from("products")
-            .select("slug,updated_at")
+            .select("slug,created_at")
             .not("slug", "is", null);
 
         if (products?.length) {
             productRoutes = products.map((p) => ({
                 url: `${BASE_URL}/products/item/${p.slug}`,
-                lastModified: p.updated_at ? new Date(p.updated_at) : now,
+                lastModified: p.created_at ? new Date(p.created_at) : now,
                 changeFrequency: "weekly",
                 priority: 0.7,
             }));

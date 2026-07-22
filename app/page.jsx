@@ -9,7 +9,7 @@ import FeaturedProducts from '@/app/components/home/FeaturedProducts'
 import CTABanner from '@/app/components/home/CTABanner'
 import NoticePopup from '@/app/components/NoticePopup'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpvizag.com";
 
 // ─── SEO Metadata ────────────────────────────────────────────────────────────
 export const metadata = {
@@ -76,15 +76,32 @@ async function getFeaturedProducts() {
     if (error) throw error
     return data ?? []
   } catch (err) {
-    // Gracefully handle missing env keys or schema not yet set up
     console.warn('[HRP] Could not fetch featured products:', err?.message)
+    return []
+  }
+}
+
+async function getCategories() {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id, name, slug, description, image_url')
+      .order('sort_order', { ascending: true })
+
+    if (error) throw error
+    return data ?? []
+  } catch (err) {
+    console.warn('[HRP] Could not fetch categories:', err?.message)
     return []
   }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function HomePage() {
-  const featuredProducts = await getFeaturedProducts()
+  const [featuredProducts, categories] = await Promise.all([
+    getFeaturedProducts(),
+    getCategories(),
+  ])
 
   return (
     <div className="overflow-x-hidden">
@@ -99,7 +116,7 @@ export default async function HomePage() {
       <HeroSection />
       <MarqueeStrip />
       <StatsStrip />
-      <CategoryGrid />
+      <CategoryGrid categories={categories} />
       <WhyChooseHRP />
       <BrandsMarquee />
       <FeaturedProducts products={featuredProducts} />

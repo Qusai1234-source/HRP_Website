@@ -14,7 +14,22 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-function buildEmailHtml({ name, company, phone, email, category, message }) {
+// Visitor-supplied text is interpolated into the notification email below.
+// Without escaping, anyone could inject markup (fake links, spoofed content)
+// into the email the business receives, so escape every untrusted field first.
+function esc(v) {
+    return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function buildEmailHtml(raw) {
+    const { name, company, phone, email, category, message } = Object.fromEntries(
+        Object.entries(raw).map(([k, v]) => [k, esc(v)])
+    );
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -104,7 +119,7 @@ function buildEmailHtml({ name, company, phone, email, category, message }) {
           <td style="background:#f8f9fb;padding:20px 36px;border-top:1px solid #eee;">
             <p style="margin:0;font-size:12px;color:#aaa;">
               Sent automatically by the HRP Industrial Products website ·
-              <a href="https://hrpindustrial.in/contact" style="color:#2B7EA1;text-decoration:none;">hrpindustrial.in</a>
+              <a href="https://hrpvizag.com/contact" style="color:#2B7EA1;text-decoration:none;">hrpvizag.com</a>
             </p>
           </td>
         </tr>

@@ -22,7 +22,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919014538495";
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpindustrial.in";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrpvizag.com";
 
 const localBusinessJsonLd = {
     "@context": "https://schema.org",
@@ -91,6 +91,7 @@ function ContactPageInner() {
         const product = searchParams.get("product");
         const category = searchParams.get("category");
         if (product) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setForm(prev => ({
                 ...prev,
                 message: `Hi, I'm interested in ${product}. Please share pricing and availability.`,
@@ -161,7 +162,7 @@ function ContactPageInner() {
                 message,
                 ``,
                 `─────────────────────`,
-                `Submitted via hrpindustrial.in`,
+                `Submitted via hrpvizag.com`,
             ].filter((l) => l !== null).join("\n");
 
             window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(waLines)}`, "_blank", "noopener,noreferrer");

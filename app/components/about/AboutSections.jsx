@@ -4,9 +4,11 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShieldCheck, Award, Globe,
   Building2, Users, MapPin,
+  Landmark, Briefcase, Network,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
@@ -18,8 +20,11 @@ const LEADERS = [
     name: "Safdar Alimohammed Tambawala",
     role: "Founder",
     roleNote: "Late",
+    badge: "Founder",
+    Icon: Landmark,
     origin: "Sidhpur, Gujarat",
-    color: "#8DC63F",
+    color: "#A3E635",
+    isFounder: true,
     bio: "Visionary entrepreneur from Sidhpur, Gujarat. Identified the industrial potential of the Coromandel Coast in the late 1970s and established the firm's foundational values of reliability and quality.",
     since: "Est. 1983",
   },
@@ -27,8 +32,11 @@ const LEADERS = [
     initials: "MT",
     name: "Mukarram Safdar Tambawala",
     role: "Managing Partner",
+    badge: "Partner",
+    Icon: Briefcase,
     origin: "Born 1977 · Sidhpur, Gujarat",
-    color: "#4a9ec5",
+    color: "#38BDF8",
+    photo: "/images/about/Mukarram.png",
     bio: "Joined in 1996. Architect of HRP's product diversification and the company's pivot into specialised fluid mechanics and instrumentation. Responsible for establishing tier-1 brand partnerships and building HRP's core product identity.",
     since: "Since 1996",
   },
@@ -36,8 +44,11 @@ const LEADERS = [
     initials: "HM",
     name: "Huzaifa Sheik Shabbir Marhaba",
     role: "Director — Corporate & National Accounts",
+    badge: "Director",
+    Icon: Network,
     origin: "Born 1981 · Ranchi, Jharkhand",
-    color: "#A78BFA",
+    color: "#A855F7",
+    photo: "/images/about/huzefa.png",
     bio: "Joined in 2013. Spearheaded national expansion by acquiring large private sector clients and managing mass corporate networks. Elevated HRP from a regional name to a Pan-India industrial supply brand.",
     since: "Since 2013",
   },
@@ -89,120 +100,274 @@ const WHY_FEATURES = [
    BRAND FILES
 ───────────────────────────────────────────────────────────── */
 const BRANDS = [
-  { file: "bosch.svg",    name: "Bosch" },
-  { file: "pneumax.svg",  name: "Pneumax" },
-  { file: "piab.png",     name: "Piab" },
-  { file: "baumer.svg",   name: "Baumer" },
-  { file: "dunlop.svg",   name: "Dunlop" },
-  { file: "khaitan.jpeg", name: "Khaitan" },
-  { file: "wadfow.png",   name: "Wadfow" },
-  { file: "conact.svg",   name: "Conact" },
-  { file: "techno.jpeg",  name: "Techno" },
-  { file: "painter.jpeg", name: "Painter" },
-  { file: "alpha.jpeg",   name: "Alpha" },
-  { file: "dingli.jpeg",  name: "Dingli" },
-];
+    { name: 'Pneumax', file: 'pneumax.jpeg' },
+    { name: 'Dunlop', file: 'dunlop.svg' },
+    { name: 'Painter', file: 'painter.jpeg' },
+    { name: 'Conact', file: 'conact.svg' },
+    { name: 'Piab', file: 'piab.png' },
+    { name: 'Techno', file: 'techno.jpeg' },
+    { name: 'Baumer', file: 'baumer.jpeg' },
+    { name: 'Bosch', file: 'bosch.svg' },
+    { name: 'Dingli', file: 'dingli.jpeg' },
+    { name: 'Alpha Polymers', file: 'alpha.jpeg' },
+    { name: 'Khaitan', file: 'khaitan.jpeg' },
+    { name: 'Wadfow', file: 'wadfow.jpeg' },
+    { name: 'Schmalz', file: 'schmalz.svg' },
+    { name: 'B Tali', file: 'btali.jpeg' },
+]
+;
+
+/* ─────────────────────────────────────────────────────────────
+   FOUNDER EMBLEM
+   The founder predates company photography, so instead of a
+   placeholder avatar the portrait slot carries a heritage mark:
+   blueprint ground, engraved rings, an embossed ST monogram,
+   a signature flourish and the founding year.
+───────────────────────────────────────────────────────────── */
+function FounderEmblem({ accent, initials }) {
+  return (
+    <svg
+      viewBox="0 0 160 160"
+      className="w-full h-full"
+      role="img"
+      aria-label={`Heritage monogram for the founder, ${initials}, established 1983`}
+    >
+      <defs>
+        <pattern id="fe-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0H0V10" fill="none" stroke={accent} strokeWidth="0.4" opacity="0.16" />
+        </pattern>
+        <radialGradient id="fe-glow" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.30" />
+          <stop offset="55%" stopColor={accent} stopOpacity="0.07" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
+        {/* Embossed metal fill — light catches the top, falls off below */}
+        <linearGradient id="fe-mono" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.96" />
+          <stop offset="46%" stopColor={accent} stopOpacity="0.92" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.30" />
+        </linearGradient>
+      </defs>
+
+      <rect width="160" height="160" fill="#0A0F1A" />
+      <rect width="160" height="160" fill="url(#fe-grid)" />
+      <rect width="160" height="160" fill="url(#fe-glow)" />
+
+      {/* Engraved rings */}
+      <circle cx="80" cy="66" r="44" fill="none" stroke={accent} strokeOpacity="0.22" strokeWidth="0.9" />
+      <circle cx="80" cy="66" r="51" fill="none" stroke={accent} strokeOpacity="0.10" strokeWidth="0.6" strokeDasharray="3 6" />
+
+      {/* Technical registration ticks */}
+      <g stroke={accent} strokeOpacity="0.35" strokeWidth="1">
+        <path d="M12 12h10M12 12v10" />
+        <path d="M148 12h-10M148 12v10" />
+        <path d="M12 148h10M12 148v-10" />
+        <path d="M148 148h-10M148 148v-10" />
+      </g>
+
+      {/* Monogram — shadow copy underneath gives the embossed edge */}
+      <text x="80" y="69" textAnchor="middle" dominantBaseline="central"
+        fontFamily="Syne, sans-serif" fontWeight="800" fontSize="50"
+        fill="#000000" fillOpacity="0.55" letterSpacing="2">{initials}</text>
+      <text x="80" y="67" textAnchor="middle" dominantBaseline="central"
+        fontFamily="Syne, sans-serif" fontWeight="800" fontSize="50"
+        fill="url(#fe-mono)" letterSpacing="2">{initials}</text>
+
+      {/* Signature flourish */}
+      <g fill="none" stroke="#FFFFFF" strokeOpacity="0.34" strokeWidth="1.4"
+         strokeLinecap="round" strokeLinejoin="round">
+        <path d="M40 124c8-12 17-14 20-8 2 5-5 9-9 12-5 3-2 7 4 6 10-2 17-14 25-14 5 0 4 6 9 6 6 0 11-6 16-12" />
+        <path d="M38 132q41 9 84-3" strokeOpacity="0.18" strokeWidth="1" />
+      </g>
+
+      {/* Founding year */}
+      <text x="80" y="146" textAnchor="middle"
+        fontFamily="Inter, sans-serif" fontWeight="600" fontSize="7"
+        fill={accent} fillOpacity="0.75" letterSpacing="3">EST. 1983</text>
+    </svg>
+  );
+}
+
+/* Faint industrial blueprint — founder card only, 4% opacity */
+function BlueprintLayer({ accent }) {
+  return (
+    <svg
+      aria-hidden
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.04 }}
+      viewBox="0 0 400 560"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <g fill="none" stroke={accent} strokeWidth="1.1">
+        <circle cx="300" cy="120" r="76" />
+        <circle cx="300" cy="120" r="52" />
+        <circle cx="300" cy="120" r="20" />
+        <path d="M300 20v200M200 120h200" />
+        {[...Array(12)].map((_, i) => {
+          const a = (i * Math.PI) / 6;
+          return (
+            <path key={i}
+              d={`M${300 + Math.cos(a) * 52} ${120 + Math.sin(a) * 52}L${300 + Math.cos(a) * 76} ${120 + Math.sin(a) * 76}`} />
+          );
+        })}
+        {/* Sectioned flange / fitting elevation */}
+        <path d="M60 400h150v90H60zM60 425h150M60 465h150M95 400v90M175 400v90" />
+        <path d="M40 400v90M230 400v90" strokeDasharray="5 5" />
+      </g>
+    </svg>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────────
    LEADER CARD
+   One layout for all three — identical dimensions, spacing and
+   hierarchy. Only the accent colour and the portrait treatment
+   differ, so the founder reads as distinguished, not different.
 ───────────────────────────────────────────────────────────── */
 function LeaderCard({ leader, index }) {
+  const { color, Icon } = leader;
+
   return (
-    <motion.div
+    <motion.article
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.55, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
-      className="relative rounded-2xl overflow-hidden flex flex-col"
-      style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.07)",
-      }}
+      className="group relative h-full"
     >
-      {/* Top accent line */}
+      {/* Thin gradient border — brightens on hover */}
       <div
-        className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
-        style={{ background: `linear-gradient(90deg, ${leader.color}, transparent)` }}
-      />
-
-      <div className="p-7 flex flex-col flex-1">
-        {/* Avatar */}
+        className="relative h-full rounded-[24px] p-px transition-all duration-300"
+        style={{
+          background: `linear-gradient(150deg, ${color}45, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.03) 100%)`,
+        }}
+      >
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 flex-shrink-0"
+          className="relative h-full rounded-[23px] overflow-hidden flex flex-col
+                     transition-all duration-300 group-hover:-translate-y-1.5"
           style={{
-            background: `${leader.color}18`,
-            border: `1px solid ${leader.color}35`,
+            background: "linear-gradient(180deg, rgba(23,32,48,0.92), #111827 55%)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
           }}
         >
-          <span
-            className="font-heading font-black text-lg leading-none select-none"
-            style={{ color: leader.color }}
-          >
-            {leader.initials}
-          </span>
-        </div>
+          {leader.isFounder && <BlueprintLayer accent={color} />}
 
-        {/* Name + role */}
-        <div className="mb-4">
-          <div className="flex items-start gap-2 flex-wrap mb-1">
-            <h3 className="font-heading font-bold text-white text-lg leading-snug">
-              {leader.name}
-            </h3>
-            {leader.roleNote && (
+          {/* Soft inner glow */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-70 group-hover:opacity-100"
+            style={{ background: `radial-gradient(120% 60% at 50% 0%, ${color}14, transparent 62%)` }}
+          />
+
+          {/* Accent line — expands across the card on hover */}
+          <div
+            aria-hidden
+            className="absolute top-0 left-0 h-px w-16 transition-all duration-300 group-hover:w-full"
+            style={{ background: `linear-gradient(90deg, ${color}, transparent)` }}
+          />
+
+          <div className="relative z-10 p-7 flex flex-col flex-1">
+            {/* ── Portrait / emblem ── */}
+            <div
+              className="relative w-[150px] h-[150px] rounded-2xl overflow-hidden flex-shrink-0
+                         transition-all duration-300"
+              style={{ border: `1px solid ${color}30`, background: "#0A0F1A" }}
+            >
+              <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.03]">
+                {leader.photo ? (
+                  <Image
+                    src={leader.photo}
+                    alt={`Portrait of ${leader.name}`}
+                    fill
+                    sizes="150px"
+                    className="object-cover"
+                    style={{ objectPosition: "50% 12%" }}
+                  />
+                ) : (
+                  <FounderEmblem accent={color} initials={leader.initials} />
+                )}
+              </div>
+
+              {/* Badge — top left */}
               <span
-                className="font-body text-xs px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
+                className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1
+                           px-2 py-[3px] rounded-md text-[10px] font-semibold tracking-[0.08em] uppercase"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  color: "rgba(255,255,255,0.4)",
+                  background: "rgba(11,18,32,0.72)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  border: `1px solid ${color}45`,
+                  color: color,
                 }}
               >
-                {leader.roleNote}
+                {leader.badge}
               </span>
-            )}
-          </div>
-          <p
-            className="font-body text-sm font-medium"
-            style={{ color: leader.color }}
-          >
-            {leader.role}
-          </p>
-          {leader.origin && (
-            <p className="font-body text-xs mt-1" style={{ color: "rgba(255,255,255,0.28)" }}>
+            </div>
+
+            {/* ── Name ── (fixed min-height keeps all three aligned) */}
+            <h3
+              className="mt-6 font-heading font-bold text-white leading-snug tracking-tight"
+              style={{ fontSize: "1.05rem", minHeight: "3.1rem" }}
+            >
+              {leader.name}
+              {leader.roleNote && (
+                <span
+                  className="ml-2 align-middle font-body text-[10px] font-medium px-1.5 py-0.5 rounded"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#64748B",
+                  }}
+                >
+                  {leader.roleNote}
+                </span>
+              )}
+            </h3>
+
+            {/* ── Position, with icon ── */}
+            <div className="flex items-start gap-2 mt-1" style={{ minHeight: "2.6rem" }}>
+              {Icon && <Icon size={14} strokeWidth={2} className="mt-[3px] flex-shrink-0" style={{ color }} />}
+              <p className="font-body text-sm font-medium leading-snug" style={{ color }}>
+                {leader.role}
+              </p>
+            </div>
+
+            {/* ── Location / year ── */}
+            <p className="font-body text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "#64748B" }}>
+              <MapPin size={11} strokeWidth={2} className="flex-shrink-0" />
               {leader.origin}
             </p>
-          )}
-        </div>
 
-        {/* Divider */}
-        <div
-          className="w-8 h-px mb-4"
-          style={{ background: `${leader.color}40` }}
-        />
+            <div className="w-10 h-px my-5" style={{ background: `${color}38` }} />
 
-        {/* Bio */}
-        <p className="font-body text-sm leading-relaxed flex-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-          {leader.bio}
-        </p>
+            {/* ── Biography ── */}
+            <p className="font-body text-sm leading-relaxed flex-1" style={{ color: "#94A3B8" }}>
+              {leader.bio}
+            </p>
 
-        {/* Since badge */}
-        <div className="mt-5">
-          <span
-            className="font-body text-xs px-3 py-1 rounded-full"
-            style={{
-              background: `${leader.color}12`,
-              border: `1px solid ${leader.color}28`,
-              color: leader.color,
-              letterSpacing: "0.06em",
-            }}
-          >
-            {leader.since}
-          </span>
+            {/* ── Timeline badge ── */}
+            <div className="mt-6">
+              <span
+                className="inline-flex items-center font-body text-xs font-medium px-3 py-1.5 rounded-full"
+                style={{
+                  background: `${color}12`,
+                  border: `1px solid ${color}2E`,
+                  color,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {leader.since}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
+
 
 /* ─────────────────────────────────────────────────────────────
    WHY CARD
@@ -259,19 +424,22 @@ export default function AboutSections() {
           LEADERSHIP
       ══════════════════════════════════════════════════════ */}
       <section
-        className="relative overflow-hidden py-24"
-        style={{ background: "var(--color-brand-dark, #1A2533)" }}
+        className="relative overflow-hidden py-28 lg:py-36"
+        style={{ background: "#0B1220" }}
       >
+        {/* Subtle grid ground */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
-            backgroundSize: "52px 52px",
+              "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, #000 55%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, #000 55%, transparent 100%)",
           }}
         />
-        <div className="absolute -left-32 top-1/3 w-96 h-96 rounded-full bg-brand-accent/[0.05] blur-[100px] pointer-events-none" />
-        <div className="absolute -right-32 bottom-1/3 w-96 h-96 rounded-full bg-brand-primary/[0.06] blur-[100px] pointer-events-none" />
+        <div className="absolute -left-40 top-1/4 w-[520px] h-[520px] rounded-full pointer-events-none blur-[130px]" style={{ background: "rgba(163,230,53,0.045)" }} />
+        <div className="absolute -right-40 bottom-1/4 w-[520px] h-[520px] rounded-full pointer-events-none blur-[130px]" style={{ background: "rgba(56,189,248,0.05)" }} />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
           <motion.div
@@ -279,24 +447,25 @@ export default function AboutSections() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mb-14"
+            className="mb-16 lg:mb-20"
           >
-            <p className="font-body text-brand-primary text-xs tracking-[0.2em] uppercase mb-4 flex items-center gap-2">
-              <span className="inline-block w-8 h-px bg-brand-primary/60" />
+            <p className="font-body text-xs tracking-[0.22em] uppercase mb-5 flex items-center gap-2.5" style={{ color: "#A3E635" }}>
+              <span className="inline-block w-8 h-px" style={{ background: "rgba(163,230,53,0.55)" }} />
               Our Leadership
             </p>
             <h2
-              className="font-heading font-black text-white leading-tight"
-              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", maxWidth: "520px" }}
+              className="font-heading font-black text-white leading-[1.08] tracking-tight"
+              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", maxWidth: "560px" }}
             >
               The People Behind<br />Every Delivery
             </h2>
-            <p className="font-body text-white/40 mt-4 max-w-lg text-sm leading-relaxed">
+            <p className="font-body mt-5 max-w-lg text-sm leading-relaxed" style={{ color: "#94A3B8" }}>
               Three generations of vision, expertise, and commitment — the human side of 40+ years of industrial reliability.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* items-stretch keeps all three cards exactly the same height */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-stretch">
             {LEADERS.map((leader, i) => (
               <LeaderCard key={leader.name} leader={leader} index={i} />
             ))}
@@ -385,7 +554,7 @@ export default function AboutSections() {
               className="font-heading font-black text-white"
               style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)" }}
             >
-              Brands We Carry
+              Authorized Dealers &amp; Stockists
             </h2>
             <p className="font-body text-white/35 mt-4 max-w-md mx-auto text-sm leading-relaxed">
               Authorised distributor for globally recognised industrial brands — every product traceable, every spec guaranteed.

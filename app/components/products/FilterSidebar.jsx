@@ -114,7 +114,7 @@ function FilterContent({
 
             {/* CTA card */}
             <div className="border border-white/[0.08] rounded-xl p-5 bg-brand-primary/[0.04]">
-                <p className="font-body text-brand-primary text-[10px] tracking-[0.2em] uppercase mb-2">Can't find a part?</p>
+                <p className="font-body text-brand-primary text-[10px] tracking-[0.2em] uppercase mb-2">Cannot find a part?</p>
                 <p className="font-body text-white/55 text-xs leading-relaxed mb-3">We source obscure parts and custom specs across all our categories.</p>
                 <Link href="/contact" className="inline-flex items-center gap-1.5 text-brand-accent font-body font-semibold text-xs hover:gap-2 transition-all">
                     Send an inquiry →

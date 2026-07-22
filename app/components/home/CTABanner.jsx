@@ -58,7 +58,7 @@ export default function CTABanner() {
                     {/* Sub */}
                     <p className="font-body text-white/55 text-lg leading-relaxed mb-12">
                         Reach us on WhatsApp for instant responses, or submit an enquiry form
-                        and we'll get back to you promptly.
+                        and we will get back to you promptly.
                     </p>
 
                     {/* Buttons */}

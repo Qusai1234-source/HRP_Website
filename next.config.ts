@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Disabled: cache writes caused OOM spikes on this machine (24GB RAM,
+    // 20-core worker pool) and Turbopack flagged its own cache as corrupt once.
+    turbopackFileSystemCacheForDev: false,
+  },
   images: {
     remotePatterns: [
       {

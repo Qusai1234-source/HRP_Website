@@ -16,6 +16,8 @@ const BRANDS = [
     { name: 'Alpha Polymers', logo: 'alpha.jpeg' },
     { name: 'Khaitan', logo: 'khaitan.jpeg' },
     { name: 'Wadfow', logo: 'wadfow.jpeg' },
+    { name: 'Schmalz', logo: 'schmalz.svg' },
+    { name: 'B Tali', logo: 'btali.jpeg' },
 ]
 
 // Triple for seamless loop — translateX(-33.333%) = exactly one set
@@ -43,7 +45,7 @@ function BrandItem({ brand }) {
                         alt={brand.name}
                         onError={() => setBroken(true)}
                         style={{
-                            height: '72px',   /* fixed height — every logo same size */
+                            height: '84px',   /* fixed height — every logo same size */
                             width: 'auto',    /* width floats to preserve aspect ratio */
                             maxWidth: '150px',/* prevents very wide logos from spilling */
                             objectFit: 'contain',
@@ -105,16 +107,16 @@ export default function BrandsMarquee() {
                     style={{
                         fontFamily: 'var(--font-inter), sans-serif',
                         fontWeight: 600,
-                        fontSize: '0.75rem',
+                        fontSize: '1.5rem',
                         letterSpacing: '0.22em',
                         textTransform: 'uppercase',
-                        color: 'var(--color-brand-primary, #2B7EA1)',
+                        color: 'var(--color-brand-primary, #8DC63F)',
                         marginBottom: '12px',
                     }}
                 >
                     Authorized Dealers &amp; Stockists
                 </p>
-                <h2
+                {/* <h2
                     style={{
                         fontFamily: 'var(--font-syne), sans-serif',
                         fontWeight: 700,
@@ -124,7 +126,7 @@ export default function BrandsMarquee() {
                     }}
                 >
                     Brands We Carry
-                </h2>
+                </h2> */}
             </div>
 
             {/* Marquee strip — overflow hidden on a separate wrapper so edge fades clip correctly */}

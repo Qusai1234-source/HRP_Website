@@ -103,12 +103,10 @@ export default function AdminProductsPage() {
   const galleryRef = useRef(null);
 
   /* ── specs import ── */
-  const [specImport, setSpecImport] = useState(null); // { rows: [{key,value}], source: 'csv'|'excel'|'image' }
-  const [specImporting, setSpecImporting] = useState(false); // image scan in progress
+  const [specImport, setSpecImport] = useState(null); // { rows: [{key,value}], source: 'csv'|'excel' }
   const [specImportErr, setSpecImportErr] = useState("");
   const csvSpecRef = useRef(null);
   const xlsxSpecRef = useRef(null);
-  const imgSpecRef = useRef(null);
 
   /* ─── fetch all data ─── */
   async function fetchAll() {
@@ -124,7 +122,10 @@ export default function AdminProductsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAll();
+  }, []);
 
   /* ─── derived data ─── */
   const filteredSubcats = subcategories.filter((sc) => activeCat === "all" || sc.category_slug === activeCat);
@@ -364,52 +365,6 @@ export default function AdminProductsPage() {
     reader.readAsArrayBuffer(file);
   }
 
-  // Image handler — sends to /api/extract-specs (Anthropic vision)
-  async function handleImageImport(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setSpecImportErr("");
-    setSpecImporting(true);
-
-    try {
-      const base64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = (ev) => {
-          // ev.target.result is "data:image/jpeg;base64,XXXX"
-          const b64 = ev.target.result.split(",")[1];
-          res(b64);
-        };
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-
-      const resp = await fetch("/api/extract-specs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64, mediaType: file.type }),
-      });
-
-      const json = await resp.json();
-      if (!resp.ok || json.error) {
-        setSpecImportErr(json.error || "Image scan failed.");
-        setSpecImporting(false);
-        return;
-      }
-
-      if (!json.specs?.length) {
-        setSpecImportErr("No specifications could be extracted from this image. Try a clearer photo of a spec table.");
-        setSpecImporting(false);
-        return;
-      }
-
-      setSpecImport({ rows: json.specs, source: "image" });
-    } catch {
-      setSpecImportErr("Failed to reach the image scan service. Check your network.");
-    }
-    setSpecImporting(false);
-  }
-
   /* ─── subcat management ─── */
   function openAddSubcat() {
     setSubcatForm({ name: "", category_slug: activeCat === "all" ? (categories[0]?.slug || "") : activeCat });
@@ -509,7 +464,7 @@ export default function AdminProductsPage() {
             </div>
           ))}
           {filteredSubcats.length === 0 && (
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", alignSelf: "center" }}>No subcategories yet — click "+ Subcategory" to add.</span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", alignSelf: "center" }}>No subcategories yet — click &quot;+ Subcategory&quot; to add.</span>
           )}
         </div>
       )}
@@ -683,7 +638,7 @@ export default function AdminProductsPage() {
                     {drawerSubcats.map((sc) => <option key={sc.id} value={sc.id}>{sc.name}</option>)}
                   </select>
                   {form.category_slug && drawerSubcats.length === 0 && (
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>No subcategories yet. Click "+ New" above.</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 4 }}>No subcategories yet. Click &quot;+ New&quot; above.</div>
                   )}
                 </div>
               </div>
@@ -734,26 +689,6 @@ export default function AdminProductsPage() {
                       Excel
                     </button>
 
-                    {/* Image scan */}
-                    <button
-                      onClick={() => { setSpecImport(null); setSpecImportErr(""); imgSpecRef.current?.click(); }}
-                      disabled={specImporting}
-                      title="Scan a datasheet image with AI"
-                      style={{ background: "rgba(168,85,247,0.1)", color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)", borderRadius: 7, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: specImporting ? "default" : "pointer", opacity: specImporting ? 0.7 : 1, display: "flex", alignItems: "center", gap: 5 }}
-                    >
-                      {specImporting ? (
-                        <>
-                          <svg style={{ animation: "spin 0.8s linear infinite" }} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                          Scanning…
-                        </>
-                      ) : (
-                        <>
-                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                          Scan Image
-                        </>
-                      )}
-                    </button>
-
                     {/* Manual add */}
                     <button
                       onClick={addSpec}
@@ -767,7 +702,6 @@ export default function AdminProductsPage() {
                 {/* Hidden file inputs */}
                 <input ref={csvSpecRef} type="file" accept=".csv,.tsv,.txt" style={{ display: "none" }} onChange={handleCSVImport} />
                 <input ref={xlsxSpecRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={handleExcelImport} />
-                <input ref={imgSpecRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageImport} />
 
                 {/* Import error */}
                 {specImportErr && (
@@ -785,11 +719,8 @@ export default function AdminProductsPage() {
                     <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(43,126,161,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 11, fontWeight: 700, color: "#2B7EA1", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                          {specImport.source === "csv" ? "📄 CSV" : specImport.source === "excel" ? "📊 Excel" : "🤖 AI Scan"} — {specImport.rows.length} rows detected
+                          {specImport.source === "csv" ? "📄 CSV" : "📊 Excel"} — {specImport.rows.length} rows detected
                         </span>
-                        {specImport.source === "image" && (
-                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Review before importing</span>
-                        )}
                       </div>
                       <button onClick={() => setSpecImport(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>×</button>
                     </div>
