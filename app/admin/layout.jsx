@@ -86,9 +86,20 @@ export default function AdminLayout({ children }) {
             setAuthChecked(true);
         });
 
-        // Listen for sign-out events
+        // This layout persists across client-side navigation between
+        // /admin/login and /admin/dashboard/*, so it does NOT remount after
+        // login. The getSession() check above runs once on mount — if that
+        // happened while still on /admin/login (no session yet), authChecked
+        // never gets set to true, and after router.push("/admin/dashboard")
+        // the layout is stuck showing the loading spinner until a full page
+        // reload re-mounts it. Handling SIGNED_IN here completes the
+        // transition immediately, without needing a reload.
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "SIGNED_OUT") router.replace("/admin/login");
+            if (event === "SIGNED_OUT") { router.replace("/admin/login"); return; }
+            if (event === "SIGNED_IN" && session) {
+                setUserEmail(session.user.email || "");
+                setAuthChecked(true);
+            }
         });
         return () => subscription.unsubscribe();
     }, [router]);
