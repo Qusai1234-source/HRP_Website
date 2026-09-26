@@ -64,7 +64,7 @@ const MILESTONES = [
     label: "Present Day",
     title: "A Name Synonymous\nWith Reliability",
     body: "Hydraulics & Rubber Products now serves a diverse portfolio of clients across India's most demanding industrial verticals — maintaining the same commitment to precision and reliability that defined its founding. The name Hydraulics & Rubber Products has come to mean one thing: engineered reliability, every time.",
-    image: "/images/about/2026.png",
+    image: "/images/about/2026.jpeg",
     alt: "Hydraulics & Rubber Products industrial supply operations",
     stat: "40+ Years Strong",
     tag: "Industrial Excellence · National Reach",

@@ -9,6 +9,7 @@ import {
   ShieldCheck, Award, Globe,
   Building2, Users, MapPin,
   Landmark, Briefcase, Network,
+  Handshake, Store,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
@@ -31,8 +32,8 @@ const LEADERS = [
   {
     initials: "MT",
     name: "Mukarram Safdar Tambawala",
-    role: "Managing Partner",
-    badge: "Partner",
+    role: "Managing Director",
+    badge: "Director",
     Icon: Briefcase,
     origin: "Born 1977 · Sidhpur, Gujarat",
     color: "#38BDF8",
@@ -52,6 +53,30 @@ const LEADERS = [
     bio: "Joined in 2013. Spearheaded national expansion by acquiring large private sector clients and managing mass corporate networks. Elevated HRP from a regional name to a Pan-India industrial supply brand.",
     since: "Since 2013",
   },
+  {
+    initials: "AQ",
+    name: "Abdul Qadir Mukarram Tambawala",
+    role: "National Accounts Manager",
+    badge: "Accounts",
+    Icon: Handshake,
+    origin: "Born 2001 · Visakhapatnam",
+    color: "#F59E0B",
+    photo: "/images/about/abdul.jpeg",
+    bio: "Joined in 2024 as the third generation of family leadership. A BBA graduate from GVP College, Visakhapatnam, he manages national accounts — strengthening key client partnerships, optimising team performance, and driving national growth.",
+    since: "Since 2024",
+  },
+  {
+    initials: "AM",
+    name: "Adam Mukarram Tambawala",
+    role: "Operations & Business Development Manager",
+    badge: "Operations",  
+    Icon: Store,
+    origin: "Visakhapatnam",
+    color: "#2DD4BF",
+    bio: "Joined in 2023 as the third generation of family leadership. Oversees daily store operations while driving business expansion — scaling physical presence, optimising retail footprint, and opening new avenues for strategic growth.",
+    since: "Since 2023",
+    photo: "/images/about/adam.png"
+  }
 ];
 
 /* ─────────────────────────────────────────────────────────────
@@ -114,6 +139,7 @@ const BRANDS = [
     { name: 'Wadfow', file: 'wadfow.jpeg' },
     { name: 'Schmalz', file: 'schmalz.svg' },
     { name: 'B Tali', file: 'btali.jpeg' },
+    { name: 'Zephyr', file: 'zephyr.png' }
 ]
 ;
 
@@ -219,6 +245,57 @@ function BlueprintLayer({ accent }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   MONOGRAM MARK
+   For leaders without a photograph who are NOT the founder. Shares
+   the emblem's embossed-initials treatment, engraved ring, glow and
+   corner ticks — but drops the founding year, signature and blueprint,
+   so it reads as a clean placeholder within the same design language.
+───────────────────────────────────────────────────────────── */
+function MonogramMark({ accent, initials }) {
+  const gid = `mm-${initials}`;
+  return (
+    <svg viewBox="0 0 160 160" className="w-full h-full" role="img" aria-label={`Monogram ${initials}`}>
+      <defs>
+        <pattern id={`${gid}-grid`} width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0H0V10" fill="none" stroke={accent} strokeWidth="0.4" opacity="0.14" />
+        </pattern>
+        <radialGradient id={`${gid}-glow`} cx="50%" cy="42%" r="60%">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.26" />
+          <stop offset="55%" stopColor={accent} stopOpacity="0.06" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={`${gid}-mono`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="46%" stopColor={accent} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.32" />
+        </linearGradient>
+      </defs>
+
+      <rect width="160" height="160" fill="#0A0F1A" />
+      <rect width="160" height="160" fill={`url(#${gid}-grid)`} />
+      <rect width="160" height="160" fill={`url(#${gid}-glow)`} />
+
+      <circle cx="80" cy="80" r="46" fill="none" stroke={accent} strokeOpacity="0.20" strokeWidth="0.9" />
+      <circle cx="80" cy="80" r="53" fill="none" stroke={accent} strokeOpacity="0.09" strokeWidth="0.6" strokeDasharray="3 6" />
+
+      <g stroke={accent} strokeOpacity="0.32" strokeWidth="1">
+        <path d="M12 12h10M12 12v10" />
+        <path d="M148 12h-10M148 12v10" />
+        <path d="M12 148h10M12 148v-10" />
+        <path d="M148 148h-10M148 148v-10" />
+      </g>
+
+      <text x="80" y="83" textAnchor="middle" dominantBaseline="central"
+        fontFamily="Syne, sans-serif" fontWeight="800" fontSize="48"
+        fill="#000000" fillOpacity="0.5" letterSpacing="2">{initials}</text>
+      <text x="80" y="81" textAnchor="middle" dominantBaseline="central"
+        fontFamily="Syne, sans-serif" fontWeight="800" fontSize="48"
+        fill={`url(#${gid}-mono)`} letterSpacing="2">{initials}</text>
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
    LEADER CARD
    One layout for all three — identical dimensions, spacing and
    hierarchy. Only the accent colour and the portrait treatment
@@ -285,14 +362,16 @@ function LeaderCard({ leader, index }) {
                     className="object-cover"
                     style={{ objectPosition: "50% 12%" }}
                   />
-                ) : (
+                ) : leader.isFounder ? (
                   <FounderEmblem accent={color} initials={leader.initials} />
+                ) : (
+                  <MonogramMark accent={color} initials={leader.initials} />
                 )}
               </div>
 
               {/* Badge — top left */}
               <span
-                className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1
+                className="absolute bottom-2.5 left-2.5 z-10 inline-flex items-center gap-1
                            px-2 py-[3px] rounded-md text-[10px] font-semibold tracking-[0.08em] uppercase"
                 style={{
                   background: "rgba(11,18,32,0.72)",
@@ -335,10 +414,12 @@ function LeaderCard({ leader, index }) {
             </div>
 
             {/* ── Location / year ── */}
-            <p className="font-body text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "#64748B" }}>
-              <MapPin size={11} strokeWidth={2} className="flex-shrink-0" />
-              {leader.origin}
-            </p>
+            {leader.origin && (
+              <p className="font-body text-xs mt-1.5 flex items-center gap-1.5" style={{ color: "#64748B" }}>
+                <MapPin size={11} strokeWidth={2} className="flex-shrink-0" />
+                {leader.origin}
+              </p>
+            )}
 
             <div className="w-10 h-px my-5" style={{ background: `${color}38` }} />
 
@@ -464,10 +545,15 @@ export default function AboutSections() {
             </p>
           </motion.div>
 
-          {/* items-stretch keeps all three cards exactly the same height */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-stretch">
+          {/* flex-wrap + justify-center (rather than a strict grid) so a
+              trailing partial row — e.g. 3 + 2 — centers instead of
+              hugging the left edge. Card width is matched to what a
+              3-column grid would give at each breakpoint. */}
+          <div className="flex flex-wrap justify-center gap-6 lg:gap-7">
             {LEADERS.map((leader, i) => (
-              <LeaderCard key={leader.name} leader={leader} index={i} />
+              <div key={leader.name} className="w-full md:w-[calc(33.333%-1rem)] lg:w-[calc(33.333%-1.1667rem)]">
+                <LeaderCard leader={leader} index={i} />
+              </div>
             ))}
           </div>
         </div>

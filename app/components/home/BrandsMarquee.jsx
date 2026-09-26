@@ -4,20 +4,21 @@ import { useState } from 'react'
 // Note: hovered state removed — no hover animation on logos
 
 const BRANDS = [
-    { name: 'Pneumax', logo: 'pneumax.jpeg' },
-    { name: 'Dunlop', logo: 'dunlop.svg' },
-    { name: 'Painter', logo: 'painter.jpeg' },
-    { name: 'Conact', logo: 'conact.svg' },
-    { name: 'Piab', logo: 'piab.png' },
-    { name: 'Techno', logo: 'techno.jpeg' },
-    { name: 'Baumer', logo: 'baumer.jpeg' },
-    { name: 'Bosch', logo: 'bosch.svg' },
-    { name: 'Dingli', logo: 'dingli.jpeg' },
-    { name: 'Alpha Polymers', logo: 'alpha.jpeg' },
-    { name: 'Khaitan', logo: 'khaitan.jpeg' },
-    { name: 'Wadfow', logo: 'wadfow.jpeg' },
-    { name: 'Schmalz', logo: 'schmalz.svg' },
-    { name: 'B Tali', logo: 'btali.jpeg' },
+    { name: 'Pneumax', logo: 'pneumax.jpeg'},
+    { name: 'Dunlop', logo: 'dunlop.svg'},
+    { name: 'Painter', logo: 'painter.jpeg'},
+    { name: 'Conact', logo: 'conact.svg'},
+    { name: 'Piab', logo: 'piab.png'},
+    { name: 'Techno', logo: 'techno.jpeg'},
+    { name: 'Baumer', logo: 'baumer.jpeg'},
+    { name: 'Bosch', logo: 'bosch.svg'},
+    { name: 'Dingli', logo: 'dingli.jpeg'},
+    { name: 'Alpha Polymers', logo: 'alpha.jpeg'},
+    { name: 'Khaitan', logo: 'khaitan.jpeg'},
+    { name: 'Wadfow', logo: 'wadfow.jpeg'},
+    { name: 'Schmalz', logo: 'schmalz.svg'},
+    { name: 'B Tali', logo: 'btali.jpeg'},
+    { name: 'Zephyr', logo: 'zephyr.png'}
 ]
 
 // Triple for seamless loop — translateX(-33.333%) = exactly one set
